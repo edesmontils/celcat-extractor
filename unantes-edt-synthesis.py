@@ -15,6 +15,15 @@ import io
 import pprint as pp
 import argparse
 
+# Test sur l'interpréteur python3
+"""
+import requests
+from ics import Calendar, Event
+req = requests.get("https://edt.univ-nantes.fr/sciences/s85976.ics")
+i = req.text
+cal = Calendar(i)
+"""
+
 def existFile(f):
     return os.path.isfile(f)
 def existDir(d):
@@ -111,8 +120,10 @@ def getGroupe():
 
 class Creneau :
     def __init__(self, icsEvent):
-        self.start = icsEvent
+        self.ics = icsEvent
         self.duree = icsEvent.duration
+        self.begin = icsEvent.begin.format('YYYY-MM-DD')
+        self.end = icsEvent.end.format('YYYY-MM-DD')
 
         p = re.search(r'Personnel : (.*)\n', icsEvent.description, re.MULTILINE)
         if p is not None : 
@@ -163,7 +174,7 @@ class Creneau :
         s = "---\n"+"personnel:"+self.personnel+"\n matière:"+self.matiere+"\n"
         return(s)
 
-def load(ics):
+def load(ics, debut, fin):
     ok = False
     fileName = "./tmp/"+ics+".ics"
     url = "https://edt.univ-nantes.fr/sciences/"+ics+".ics"
@@ -200,15 +211,24 @@ def load(ics):
         lg = []
         for e in list(cal.timeline):
             ev = Creneau(e)
-            lc.append(ev)
-            if ev.personnel is not None :
-                lp += [p for p in ev.personnel if p not in lp]
-            if ev.code_matiere is not None :
-                if ev.code_matiere not in lm: lm.append(ev.code_matiere)
-            else: 
-                if "Sans_code" not in lm: lm.append('Sans_code')
-            if ev.groupe is not None :
-                lg += [g for g in ev.groupe if g not in lg ]
+
+            ok = True
+            if debut is not None :
+                if ev.begin < debut : ok = False
+            if fin is not None :
+                if ev.end > fin : ok = False
+
+            if ok :
+                lc.append(ev)
+                if ev.personnel is not None :
+                    lp += [p for p in ev.personnel if p not in lp]
+                if ev.code_matiere is not None :
+                    if ev.code_matiere not in lm: lm.append(ev.code_matiere)
+                else: 
+                    if "Sans_code" not in lm: lm.append('Sans_code')
+                if ev.groupe is not None :
+                    lg += [g for g in ev.groupe if g not in lg ]
+
         return lc, lp, lm, lg
     else:
         print(url + " introuvable !")
@@ -270,6 +290,9 @@ if __name__ == "__main__":
 
     parser.add_argument("-resp", action="store_true", help="Des modules où la personne donne des cours (si -bm, -p et -n)" )
 
+    parser.add_argument("-d", "--debut", default=None, dest="debut", help="date de début des créneaux à analyser (AAAA-MM-JJ)" )    
+    parser.add_argument("-f", "--fin", default=None, dest="fin", help="date de fin des créneaux à analyser (AAAA-MM-JJ)" ) 
+
     args = parser.parse_args()
 
     print("Reconstruction des CSV")
@@ -316,7 +339,7 @@ if __name__ == "__main__":
                 if test(row['Nom'], row['Prénom'], args.nom, args.prenom) :
                     print("==================================================")
                     print("==> Recherche pour : "+row['Nom']+' '+row['Prénom'])
-                    (lc, lp, lm, lg) = load(row['id'])
+                    (lc, lp, lm, lg) = load(row['id'], args.debut, args.fin)
                     if lc is not None:
                         if args.module is not None :
                             for m in lm :
@@ -350,14 +373,14 @@ if __name__ == "__main__":
                     print("=================== ", args.nom, ", ",args.prenom ,"  ===============================")
                     print("==> Recherche pour : "+row['Nom'])
                     print("Code : "+row['Code'])
-                    (lc, lp, lm, lg) = load(row['id'])
+                    (lc, lp, lm, lg) = load(row['id'], args.debut, args.fin)
                     for p in lp : analyse([c for c in lc if p in c.personnel ], p)
                     print("==================================================\n\n")
                 elif not(args.resp) and test(row['Code'], args.module) : 
                     print("==================================================")
                     print("==> Recherche pour : "+row['Nom'])
                     print("Code : "+row['Code'])
-                    (lc, lp, lm, lg) = load(row['id'])
+                    (lc, lp, lm, lg) = load(row['id'], args.debut, args.fin)
                     if lc is not None:
                         if (args.nom is not None) and (args.prenom is not None):
                             for p in lp :
@@ -392,7 +415,7 @@ if __name__ == "__main__":
                 if test(row['Code'], args.groupe) : 
                     print("==================================================")
                     print("==> Recherche pour : "+row['Code'])
-                    (lc, lp, lm, lg) = load(row['id'])
+                    (lc, lp, lm, lg) = load(row['id'], args.debut, args.fin)
                     if lc is not None:
                         if (args.nom is not None) and (args.prenom is not None):
                             for p in lp :
