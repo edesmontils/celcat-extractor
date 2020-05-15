@@ -15,6 +15,8 @@ import io
 import pprint as pp
 import argparse
 
+import unicodedata
+
 # Test sur l'interpréteur python3
 """
 import requests
@@ -30,7 +32,19 @@ def existDir(d):
     return os.path.exists(d)
 
 def getPerso():
+
+    personnel = {}
+
     if not existFile('personnels.csv') :
+        personnel_dpt = {}
+        if existFile('Liste_Permanents_2019-2020.csv') :
+            with open('Liste_Permanents_2019-2020.csv', 'r') as csvfile:
+                dct = csv.DictReader(csvfile, delimiter=';')
+                for row in dct:
+                    nom = ''.join((c for c in unicodedata.normalize('NFD', row['NOM'].strip()) if unicodedata.category(c) != 'Mn'))
+                    prenom = ''.join((c for c in unicodedata.normalize('NFD', row['PRENOM'].strip()) if unicodedata.category(c) != 'Mn'))
+                    personnel_dpt[nom+', '+prenom] = [nom, prenom, row['STATUT'].strip()]
+
         # Get page with all names and urls
         url: str = "https://edt.univ-nantes.fr/sciences/sindex.html"
         req = requests.get(url)
@@ -38,25 +52,40 @@ def getPerso():
             page_content: str = req.text
 
             # Find id in there
-            fda = re.findall(r'<option value="(.*)\.html">(.*), (.*)</option>',
-                              page_content, re.MULTILINE)
-
+            fda = re.findall(r'<option value="(.*)\.html">(.*), (.*)</option>', page_content, re.MULTILINE)
             if not fda is None:
                 file = 'personnels.csv'
                 print('Saving ',file)
                 try:
                     with open(file, "w", encoding='utf-8') as f:
-                        fn = ['id', 'Nom', 'Prénom']
+                        fn = ['id', 'Nom', 'Prénom','Statut']
                         writer = csv.DictWriter(f, fieldnames=fn, delimiter='\t')
                         writer.writeheader()
                         for c in fda:
-                            s = {'id': c[0], 'Nom': c[1], 'Prénom':c[2]}
+                            nom = ''.join((c for c in unicodedata.normalize('NFD', c[1].strip()) if unicodedata.category(c) != 'Mn'))
+                            prenom = ''.join((c for c in unicodedata.normalize('NFD', c[2].strip()) if unicodedata.category(c) != 'Mn'))
+                            nomc = nom+', '+prenom
+                            if nomc in personnel_dpt.keys():
+                                p = personnel_dpt[nomc]
+                                stt = p[2].upper()
+                            else: 
+                                stt = 'AUTRE'
+                            s = {'id': c[0], 'Nom': nom, 'Prénom':prenom, 'Statut':stt}
+                            personnel[nomc] = [ nom, prenom, stt]
                             writer.writerow(s)
                     print('saved')
                 except KeyboardInterrupt:
                     print('Interupted') 
         else:
             print('Impossible de récupérer le référentiel des personnels')
+    else:
+        with open('personnels.csv', 'r', encoding='utf-8') as csvfile:
+            dct = csv.DictReader(csvfile, delimiter='\t')
+            for row in dct:
+                nom = row['Nom']
+                prenom = row['Prénom']
+                personnel[nom+', '+prenom] = [nom, prenom, row['Statut']]        
+    return personnel
 
 def getModule():
     if not existFile('modules.csv') :
@@ -296,7 +325,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print("Reconstruction des CSV")
-    getPerso()
+
+    personnel_dpt = getPerso()
     getModule()
     getGroupe()
 
@@ -304,6 +334,9 @@ if __name__ == "__main__":
         os.makedirs('./tmp')
 
     print("Préparation des données")
+
+
+
     if (args.nom is not None) and (args.prenom is not None):
         args.nom = args.nom.upper()
         args.prenom = args.prenom.capitalize()
@@ -337,8 +370,11 @@ if __name__ == "__main__":
             dct = csv.DictReader(csvfile, delimiter='\t')
             for row in dct:
                 if test(row['Nom'], row['Prénom'], args.nom, args.prenom) :
+                    nomp = row['Nom']+', '+row['Prénom']
+                    if nomp in personnel_dpt.keys(): statut =  nomp+' ('+personnel_dpt[nomp][2]+')'
+                    else: statut = nomp 
                     print("==================================================")
-                    print("==> Recherche pour : "+row['Nom']+' '+row['Prénom'])
+                    print("==> Recherche pour : "+statut)
                     (lc, lp, lm, lg) = load(row['id'], args.debut, args.fin)
                     if lc is not None:
                         if args.module is not None :
@@ -385,18 +421,22 @@ if __name__ == "__main__":
                         if (args.nom is not None) and (args.prenom is not None):
                             for p in lp :
                                 if match_np.match(p) is not None : #p == args.nom+', '+args.prenom: 
-                                    if args.groupe is not None :
+                                    if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
+                                    else: statut = p 
+                                    if args.groupe is not None : 
                                         for g in lg :
                                             if match_g.match(g) is not None :
-                                                analyse([c for c in lc if (p in c.personnel) and (g in c.groupe) ], p+'|'+g)
-                                    else: analyse([c for c in lc if p in c.personnel ], p)
+                                                analyse([c for c in lc if (p in c.personnel) and (g in c.groupe) ], statut+'|'+g)
+                                    else: analyse([c for c in lc if p in c.personnel ], statut)
                         elif  args.groupe is not None :
                             for g in lg :
                                 if match_g.match(g) is not None : #m == args.module : 
                                     analyse([c for c in lc if g in c.groupe], g)
                         else: 
                             for p in lp :
-                                analyse([c for c in lc if p in c.personnel ], p)
+                                if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
+                                else: statut = p
+                                analyse([c for c in lc if p in c.personnel ], statut)
 
 
                     print("==================================================\n\n")
@@ -420,18 +460,22 @@ if __name__ == "__main__":
                         if (args.nom is not None) and (args.prenom is not None):
                             for p in lp :
                                 if match_np.match(p) is not None : # p == args.nom+', '+args.prenom: 
+                                    if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
+                                    else: statut = p
                                     if args.module is not None :
                                         for m in lm :
                                             if match_m.match(m) is not None :
-                                                analyse([c for c in lc if (m == c.code_matiere) and (p in c.personnel) ], p+'|'+m)
-                                    else: analyse([c for c in lc if p in c.personnel ], p)
+                                                analyse([c for c in lc if (m == c.code_matiere) and (p in c.personnel) ], statut+'|'+m)
+                                    else: analyse([c for c in lc if p in c.personnel ], statut)
                         elif  args.module is not None :
                             for m in lm :
                                 if match_m.match(m) is not None : #m == args.module : 
                                     analyse([c for c in lc if m == c.code_matiere], m)
                         else: 
                             for p in lp :
-                                analyse([c for c in lc if p in c.personnel ], p)
+                                if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
+                                else: statut = p
+                                analyse([c for c in lc if p in c.personnel ], statut)
                     print("==================================================\n\n")
             print()
     print("Fin")
