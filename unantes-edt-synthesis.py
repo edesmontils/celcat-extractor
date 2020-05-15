@@ -270,6 +270,9 @@ if __name__ == "__main__":
 
     parser.add_argument("-resp", action="store_true", help="Des modules où la personne donne des cours (si -bm, -p et -n)" )
 
+    parser.add_argument("-d", "--debut", default=None, dest="debut", help="date de début des créneaux à analyser (AAAA-MM-JJ)" )    
+    parser.add_argument("-f", "--fin", default=None, dest="fin", help="date de fin des créneaux à analyser (AAAA-MM-JJ)" ) 
+
     args = parser.parse_args()
 
     print("Reconstruction des CSV")
