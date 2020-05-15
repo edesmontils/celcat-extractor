@@ -19,6 +19,7 @@ https://arrow.readthedocs.io/en/latest/
 ```
 usage: unantes-edt-synthesis.py [-h] [-n NOM] [-p PRENOM] [-m MODULE]
                                 [-g GROUPE] [-bm] [-bp] [-bg] [-resp]
+                                [-d DEBUT] [-f FIN]
 
 Celcat explorer
 
@@ -37,6 +38,9 @@ optional arguments:
   -bg                   Recherche par groupe (-g GGG obligatoire)
   -resp                 Des modules où la personne donne des cours (si -bm, -p
                         et -n)
+  -d DEBUT, --debut DEBUT
+                        date de début des créneaux à analyser (AAAA-MM-JJ)
+  -f FIN, --fin FIN     date de fin des créneaux à analyser (AAAA-MM-JJ)
 ```
 
 Exemple :
