@@ -37,14 +37,60 @@ optional arguments:
 
 Exemple :
 ```
-$ python3 unantes-edt-hours.py erwan bousse X4IP120      
+$ python3 unantes-edt-synthesis.py -bp -resp -n 'Desmontils' -p '.*'    
+Reconstruction des CSV
+Préparation des données
 
-Récupération de l'emploi du temps depuis https://edt.univ-nantes.fr/sciences/s574974.ics
-21 créneaux trouvés !
+=========================
+= Analyse par personnel =
+=========================
 
-=== Volume horaire pour l'UE « Vérification et validation (X4IP120) »
-=== Intervenant : BOUSSE, Erwan
-- TD : 17:20:00
-- CM : 8:40:00
-- TP : 6:00:00
+==================================================
+==> Recherche pour : DESMONTILS Emmanuel
+Read saved ics
+Analyse de : <https://edt.univ-nantes.fr/sciences/s85976.ics>
+
+=== Volume horaire pour « X1IP020 »
+− CM info : 12:00:00 (12.00)
+− TD info : 20:00:00 (20.00)
+− TP info : 8:00:00 (8.00)
+− Contrôle continu : 2:50:00 (2.83)
+− Contrôle continu TD : 2:00:00 (2.00)
+
+=== Volume horaire pour « X1IM020 »
+− CM info : 12:00:00 (12.00)
+− TD info : 20:00:00 (20.00)
+− TP info : 8:00:00 (8.00)
+
+=== Volume horaire pour « X21I040 »
+− CM info : 10:40:00 (10.67)
+− Contrôle continu : 1:20:00 (1.33)
+
+=== Volume horaire pour « X31I110 »
+− TD info : 8:00:00 (8.00)
+
+=== Volume horaire pour « r*FSU21APROG »
+− Formation continue : 1 day, 3:00:00 (27.00)
+
+=== Volume horaire pour « r*BASEDEDONN »
+− TD info : 12:40:00 (12.67)
+− Contrôle continu : 1:30:00 (1.50)
+
+=== Volume horaire pour « X2IM030 »
+− CM info : 6:40:00 (6.67)
+− TD info : 9:20:00 (9.33)
+− Contrôle continu : 1:20:00 (1.33)
+
+=== Volume horaire pour « X2IP030 »
+− CM info : 5:20:00 (5.33)
+− TD info : 10:40:00 (10.67)
+− Contrôle continu : 1:20:00 (1.33)
+
+=== Volume horaire pour « r*JOURNÉEENS »
+− Divers : 11:30:00 (11.50)
+==================================================
+
+
+
+Fin
 ```
