@@ -15,6 +15,12 @@ https://icspy.readthedocs.io/en/stable/
 
 https://arrow.readthedocs.io/en/latest/
 
+== Installation 
+
+'''
+git clone https://github.com/edesmontils/celcat-extractor.git
+cd celcat-extractor
+'''
 
 == Usage
 ```
