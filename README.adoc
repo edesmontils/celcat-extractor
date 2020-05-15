@@ -12,8 +12,8 @@ $ pip3 install --user ics requests argparse
 ```
 
 Documentation :
-- https://icspy.readthedocs.io/en/stable/
-- https://arrow.readthedocs.io/en/latest/
+* https://icspy.readthedocs.io/en/stable/
+* https://arrow.readthedocs.io/en/latest/
 
 == Installation 
 
