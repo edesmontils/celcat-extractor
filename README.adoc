@@ -1,0 +1,50 @@
+= Extracteur d'informations EDT Université de Nantes
+
+Permet de récupérer dans l'EDT en ligne le volume horaire d'un intervenant sur une UE à partir du Celcet de l'Université de Nantes.
+
+Il est basé sur l'outil https://gitlab.univ-nantes.fr/bousse-e/edt-extractor 
+
+
+== Prérequis
+
+```
+$ pip3 install --user ics requests argparse
+```
+
+== Usage
+```
+usage: unantes-edt-synthesis.py [-h] [-n NOM] [-p PRENOM] [-m MODULE]
+                                [-g GROUPE] [-bm] [-bp] [-bg] [-resp]
+
+Celcat explorer
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -n NOM, --nom NOM     Nom d'une personne (en majuscules)
+  -p PRENOM, --prenom PRENOM
+                        Prenom d'une personne (minuscules, sauf première
+                        lettre)
+  -m MODULE, --module MODULE
+                        Code du module
+  -g GROUPE, --groupe GROUPE
+                        Code du groupe
+  -bm                   Recherche par module (-m XXX obligatoire)
+  -bp                   Recherche par personne (-n NNN et -p PPP obligatoires)
+  -bg                   Recherche par groupe (-g GGG obligatoire)
+  -resp                 Des modules où la personne donne des cours (si -bm, -p
+                        et -n)
+```
+
+Exemple :
+```
+$ python3 unantes-edt-hours.py erwan bousse X4IP120      
+
+Récupération de l'emploi du temps depuis https://edt.univ-nantes.fr/sciences/s574974.ics
+21 créneaux trouvés !
+
+=== Volume horaire pour l'UE « Vérification et validation (X4IP120) »
+=== Intervenant : BOUSSE, Erwan
+- TD : 17:20:00
+- CM : 8:40:00
+- TP : 6:00:00
+```
