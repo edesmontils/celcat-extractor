@@ -11,16 +11,16 @@ Il est basé sur l'outil https://gitlab.univ-nantes.fr/bousse-e/edt-extractor
 $ pip3 install --user ics requests argparse
 ```
 
-https://icspy.readthedocs.io/en/stable/
-
-https://arrow.readthedocs.io/en/latest/
+Documentation :
+- https://icspy.readthedocs.io/en/stable/
+- https://arrow.readthedocs.io/en/latest/
 
 == Installation 
 
-'''
+```
 git clone https://github.com/edesmontils/celcat-extractor.git
 cd celcat-extractor
-'''
+```
 
 == Usage
 ```
