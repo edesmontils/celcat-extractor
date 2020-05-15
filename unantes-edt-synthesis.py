@@ -335,8 +335,6 @@ if __name__ == "__main__":
 
     print("Préparation des données")
 
-
-
     if (args.nom is not None) and (args.prenom is not None):
         args.nom = args.nom.upper()
         args.prenom = args.prenom.capitalize()
