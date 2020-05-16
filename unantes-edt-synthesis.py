@@ -14,6 +14,8 @@ import io
 
 import pprint as pp
 import argparse
+from configparser import ConfigParser, ExtendedInterpolation
+#from flask import Flask, render_template, request, jsonify
 
 import unicodedata
 
@@ -31,14 +33,14 @@ def existFile(f):
 def existDir(d):
     return os.path.exists(d)
 
-def getPerso():
+def getPerso(cfg):
 
     personnel = {}
 
-    if not existFile('personnels.csv') :
+    if not existFile(cfg['File Names']['Teachers']) :
         personnel_dpt = {}
-        if existFile('Liste_Permanents_2019-2020.csv') :
-            with open('Liste_Permanents_2019-2020.csv', 'r') as csvfile:
+        if existFile(cfg['File Names']['ComputerScience_teachers']) :
+            with open(cfg['File Names']['ComputerScience_teachers'], 'r') as csvfile:
                 dct = csv.DictReader(csvfile, delimiter=';')
                 for row in dct:
                     nom = ''.join((c for c in unicodedata.normalize('NFD', row['NOM'].strip()) if unicodedata.category(c) != 'Mn'))
@@ -46,7 +48,7 @@ def getPerso():
                     personnel_dpt[nom+', '+prenom] = [nom, prenom, row['STATUT'].strip()]
 
         # Get page with all names and urls
-        url: str = "https://edt.univ-nantes.fr/sciences/sindex.html"
+        url: str = cfg['Web']['Celcat_url']+"sindex.html"
         req = requests.get(url)
         if req.status_code == 200:
             page_content: str = req.text
@@ -54,7 +56,7 @@ def getPerso():
             # Find id in there
             fda = re.findall(r'<option value="(.*)\.html">(.*), (.*)</option>', page_content, re.MULTILINE)
             if not fda is None:
-                file = 'personnels.csv'
+                file = cfg['File Names']['Teachers']
                 print('Saving ',file)
                 try:
                     with open(file, "w", encoding='utf-8') as f:
@@ -79,7 +81,7 @@ def getPerso():
         else:
             print('Impossible de récupérer le référentiel des personnels')
     else:
-        with open('personnels.csv', 'r', encoding='utf-8') as csvfile:
+        with open(cfg['File Names']['Teachers'], 'r', encoding='utf-8') as csvfile:
             dct = csv.DictReader(csvfile, delimiter='\t')
             for row in dct:
                 nom = row['Nom']
@@ -87,10 +89,10 @@ def getPerso():
                 personnel[nom+', '+prenom] = [nom, prenom, row['Statut']]        
     return personnel
 
-def getModule():
-    if not existFile('modules.csv') :
+def getModule(cfg):
+    if not existFile(cfg['File Names']['Courses']) :
         # Get page with all names and urls
-        url: str =  "https://edt.univ-nantes.fr/sciences/mindex.html" #'https://edt.univ-nantes.fr/sciences/d359754mindex.html' #
+        url: str =  cfg['Web']['Celcat_url']+"mindex.html" #'https://edt.univ-nantes.fr/sciences/d359754mindex.html' #
         req = requests.get(url)
         if req.status_code == 200:
             page_content: str = req.text
@@ -100,7 +102,7 @@ def getModule():
                               page_content, re.MULTILINE)
 
             if not fda is None:
-                file = 'modules.csv'
+                file = cfg['File Names']['Courses']
                 print('Saving ',file)
 
                 try:
@@ -117,10 +119,10 @@ def getModule():
         else:
             print("Impossible de récupérer le référentiel des modules")
 
-def getGroupe():
-    if not existFile('groupes.csv') :
+def getGroupe(cfg):
+    if not existFile(cfg['File Names']['Groups']) :
         # Get page with all names and urls
-        url: str = "https://edt.univ-nantes.fr/sciences/gindex.html"
+        url: str = cfg['Web']['Celcat_url']+"gindex.html"
         req = requests.get(url)
         if req.status_code == 200:
             page_content: str = req.text
@@ -130,7 +132,7 @@ def getGroupe():
                               page_content, re.MULTILINE)
 
             if not fda is None:
-                file = 'groupes.csv'
+                file = cfg['File Names']['Groups']
                 print('Saving ',file)
 
                 try:
@@ -203,10 +205,10 @@ class Creneau :
         s = "---\n"+"personnel:"+self.personnel+"\n matière:"+self.matiere+"\n"
         return(s)
 
-def load(ics, debut, fin):
+def load(cfg, ics, debut, fin):
     ok = False
-    fileName = "./tmp/"+ics+".ics"
-    url = "https://edt.univ-nantes.fr/sciences/"+ics+".ics"
+    fileName = cfg['Dir Names']['Cache_dir']+ics+".ics"
+    url = cfg['Web']['Celcat_url']+ics+".ics"
 
     if existFile(fileName):
         print("Read saved ics")
@@ -288,12 +290,12 @@ def analyse(lev, code):
         print(f'− {ct} : {str(course_type_total)} ({str(course_type_total_hours)})')    
 
 
-def getModules(args, match_np, type_list):
+def getModules(cfg, args, match_np, type_list):
     lcf = []
     if (args.nom is not None) and (args.prenom is not None):
         test = lambda rx, ry, x, y : match_np.match(rx+', '+ry) # x==rx and y==ry
     else: test = lambda rx, ry, x, y : True
-    with open('personnels.csv', 'r') as csvfile:
+    with open(cfg['File Names']['Teachers'], 'r') as csvfile:
         dct = csv.DictReader(csvfile, delimiter='\t')
         for row in dct:
             if test(row['Nom'], row['Prénom'], args.nom, args.prenom) :
@@ -307,6 +309,8 @@ def getModules(args, match_np, type_list):
 #==================================================
 #==================================================
 if __name__ == "__main__":
+
+    #=== Gestion des arguments
 
     parser = argparse.ArgumentParser(description='Celcat explorer')
     parser.add_argument("-n", "--nom", default=None, dest="nom", help="Nom d'une personne (en majuscules)")
@@ -324,14 +328,25 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    #=== Gestion de la configuratiuon
+
+    cfg = ConfigParser() #interpolation=ExtendedInterpolation())
+    r = cfg.read('config.cfg')
+    if r == []:
+        print('Config file not founded')
+        exit()
+    #print(cfg['File Names']['Teachers'])
+
+    #=== Préparation du contexte
+
     print("Reconstruction des CSV")
 
-    personnel_dpt = getPerso()
-    getModule()
-    getGroupe()
+    personnel_dpt = getPerso(cfg)
+    getModule(cfg)
+    getGroupe(cfg)
 
-    if not existDir('./tmp'):
-        os.makedirs('./tmp')
+    if not existDir(cfg['Dir Names']['Cache_dir']):
+        os.makedirs(cfg['Dir Names']['Cache_dir'])
 
     print("Préparation des données")
 
@@ -352,11 +367,12 @@ if __name__ == "__main__":
     else: match_g = re.compile('.*')
 
     if args.bm and args.resp and (args.nom is not None) and (args.prenom is not None) :
-        lcf = getModules(args, match_np, 'CM info')
+        lcf = getModules(cfg, args, match_np, 'CM info')
     else: lcf = []
 
     print()
 
+    #=== Lancement des traitements
     if args.bp:
         print("=========================")
         print("= Analyse par personnel =")
@@ -364,7 +380,7 @@ if __name__ == "__main__":
         if (args.nom is not None) and (args.prenom is not None):
             test = lambda rx, ry, x, y : match_np.match(rx+', '+ry) # x==rx and y==ry
         else: test = lambda rx, ry, x, y : True
-        with open('personnels.csv', 'r') as csvfile:
+        with open(cfg['File Names']['Teachers'], 'r') as csvfile:
             dct = csv.DictReader(csvfile, delimiter='\t')
             for row in dct:
                 if test(row['Nom'], row['Prénom'], args.nom, args.prenom) :
@@ -373,7 +389,7 @@ if __name__ == "__main__":
                     else: statut = nomp 
                     print("==================================================")
                     print("==> Recherche pour : "+statut)
-                    (lc, lp, lm, lg) = load(row['id'], args.debut, args.fin)
+                    (lc, lp, lm, lg) = load(cfg, row['id'], args.debut, args.fin)
                     if lc is not None:
                         if args.module is not None :
                             for m in lm :
@@ -400,21 +416,21 @@ if __name__ == "__main__":
         if args.module is not None:
             test = lambda rx, x : match_m.match(rx) is not None # x==rx
         else: test = lambda rx, x : True
-        with open('modules.csv', 'r') as csvfile:
+        with open(cfg['File Names']['Courses'], 'r') as csvfile:
             dct = csv.DictReader(csvfile, delimiter='\t')
             for row in dct:
                 if args.resp and (args.nom is not None) and (args.prenom is not None) and (row['Code'] in lcf):
                     print("=================== ", args.nom, ", ",args.prenom ,"  ===============================")
                     print("==> Recherche pour : "+row['Nom'])
                     print("Code : "+row['Code'])
-                    (lc, lp, lm, lg) = load(row['id'], args.debut, args.fin)
+                    (lc, lp, lm, lg) = load(cfg, row['id'], args.debut, args.fin)
                     for p in lp : analyse([c for c in lc if p in c.personnel ], p)
                     print("==================================================\n\n")
                 elif not(args.resp) and test(row['Code'], args.module) : 
                     print("==================================================")
                     print("==> Recherche pour : "+row['Nom'])
                     print("Code : "+row['Code'])
-                    (lc, lp, lm, lg) = load(row['id'], args.debut, args.fin)
+                    (lc, lp, lm, lg) = load(cfg, row['id'], args.debut, args.fin)
                     if lc is not None:
                         if (args.nom is not None) and (args.prenom is not None):
                             for p in lp :
@@ -447,13 +463,13 @@ if __name__ == "__main__":
         if args.groupe is not None:
             test = lambda rx, x : match_g.match(rx) is not None #  x==rx
         else: test = lambda rx, x : True
-        with open('groupes.csv', 'r') as csvfile:
+        with open(cfg['File Names']['Groups'], 'r') as csvfile:
             dct = csv.DictReader(csvfile, delimiter='\t')
             for row in dct:
                 if test(row['Code'], args.groupe) : 
                     print("==================================================")
                     print("==> Recherche pour : "+row['Code'])
-                    (lc, lp, lm, lg) = load(row['id'], args.debut, args.fin)
+                    (lc, lp, lm, lg) = load(cfg, row['id'], args.debut, args.fin)
                     if lc is not None:
                         if (args.nom is not None) and (args.prenom is not None):
                             for p in lp :
