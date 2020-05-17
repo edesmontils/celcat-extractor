@@ -110,6 +110,8 @@ function clear() {
 }
 
 function init() {
+    //alert("Inti !")
+    clear();
     news();
 }
 
@@ -206,7 +208,7 @@ function histo_mod(i) {
 }
 
 function histo_del(i) {
-    if (confirm("Êtes-vous certain(e) de vouloir supprimer la requête " + i + " ?")) {
+    if (confirm("Êtes-vous certain(e) de vouloir supprimer la requête " + i + " ?")) {
         rs.remove(i);
         get_histo();
     }
@@ -255,6 +257,8 @@ function mentions() {
             method: 'get',
             onSuccess: function (trs) {
                 messages_mentions = trs.responseText
+                messages_mentions = '<div class="post"><h2 class="title">Mentions</h2> <h3 class="posted">par E. Desmontils</h3><div class="story">' 
+                            + messages_mentions + "</div></div>\n";
                 $('posts').hide();
                 $('posts').update(messages_mentions);
                 $('posts').appear();
@@ -264,8 +268,6 @@ function mentions() {
             }
         });
     } else {
-        messages_mentions = '<div class="post"><h2 class="title">Mentions</h2> <h3 class="posted">par E. Desmontils</h3><div class="story">' 
-                            + messages_mentions + "</div></div>\n";
         $('posts').hide();
         $('posts').update(messages_mentions);
         $('posts').appear();

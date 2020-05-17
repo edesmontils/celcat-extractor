@@ -23,11 +23,13 @@ Released for free under a Creative Commons Attribution 2.5 License
   <!-- Attention, ordre important ! -->
   <script src="{{url_for('static',filename='./js/prototype.js')}}" type="text/javascript"></script>
   <script src="{{url_for('static',filename='./js/scriptaculous/scriptaculous.js')}}" type="text/javascript"></script>
-  <script src="{{url_for('static',filename='./js/base-qsim.js')}}" type="text/javascript"></script>
+  <script src="{{url_for('static',filename='./js/base.js')}}" type="text/javascript"></script>
  
 </head>
 
-<body onload="init()" onunload="end()" onreload="end()">
+<body onload="init()" 
+      onunload="end()" 
+      onreload="end()">
 
 <div id="header">
 	<h1>{{nom_appli}}</h1>
@@ -58,16 +60,16 @@ Released for free under a Creative Commons Attribution 2.5 License
 		</div>
 	</div>
 	
-<!-- 	<div id="categories" class="boxed">
-		<h2 class="heading">Datasets</h2>
+ 	<div id="categories" class="boxed">
+		<h2 class="heading">Personnel Info</h2>
 		<div class="content">
-			<ul>
+			<!--ul>
 			{% for nom in listeNoms %}
 		<li> <a href='#' onClick='new Effect.Highlight(this); db( "{{nom}}" );return false;' style='cursor:pointer'><img src="{{url_for('static',filename='images/Database.png')}}" alt='Base {{nom}}' title='Base {{nom}}' width='32'/> {{nom}}</a></li>
 			{% endfor %}
-			</ul>
+			</ul-->
 		</div>
-	</div> -->
+	</div> 
 
 	<div id="blogroll" class="boxed">
 		<h2 class="heading">Contact</h2>

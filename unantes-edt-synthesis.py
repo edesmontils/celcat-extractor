@@ -90,7 +90,8 @@ def index():
         'index.html',
         # username = cas.username,
         # display_name = cas.attributes['cas:displayName'],
-        nom_appli=ctx.name, version=ctx.version
+        nom_appli=ctx.name, 
+        version=ctx.version
     )
 
 # @app.route('/end')
@@ -176,7 +177,6 @@ def apropos():
 
 @app.route('/help')
 def help():
-    print('HELP !')
     m = ctx.tree.getroot().find('aides')
     s = ''
     for cont in m:
@@ -209,7 +209,7 @@ def loadWebConfig(configFile) :
     #---
     ctx.version = ctx.tree.getroot().get('version')
     ctx.name = ctx.tree.getroot().get('name')
-    if ctx.tree.getroot().get('debug') == 'False':
+    if ctx.tree.getroot().get('debug') == 'false':
         ctx.debug = False
     else:
         ctx.debug = True
@@ -536,19 +536,19 @@ if __name__ == "__main__":
 
 
     if args.web :
-        loadWebConfig('web-config.xml')
+        loadWebConfig('./web-config.xml')
         try:
-            print('Running ', ctx.name ,' on ', cfg['Web']['host']+':'+cfg['Web']['port'])
+            print('Running ', ctx.name ,' on <http://', cfg['Web']['host']+':'+cfg['Web']['port'], '>')
             ctx.start()
             app.run(
                 host=cfg['Web']['host'],
                 port=int(cfg['Web']['port']),
-                debug=False
+                debug=ctx.debug
             )
         except KeyboardInterrupt:
             pass
         finally:
-            pass
+            ctx.stop()
     else:
         print("Préparation des données")
 
