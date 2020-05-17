@@ -184,19 +184,18 @@ def help():
             s += etree.tostring(cont, encoding='utf8').decode('utf8')
     return s
 
-# @app.route('/envoyer', methods=['post'])
-# def envoyer():
-#     query = request.form['requete']
-#     datasource = request.form['base']
-#     bgp_list = request.form['bgp_list']
-#     # print('Recieved BGP:',bgp_list)
-#     if bgp_list is '':
-#         bgp_list = ''
-#     ip = request.remote_addr
-#     s = treat(query, bgp_list, ip, datasource)
-#     tab = doTab(s)
-#     d = dict({'ok': s != 'Error', 'val': tab})
-#     return jsonify(result=d)
+@app.route('/envoyer', methods=['post'])
+def envoyer():
+    query = request.form['requete']
+    bgp_list = request.form['bgp_list']
+    # print('Recieved BGP:',bgp_list)
+    if bgp_list is '':
+        bgp_list = ''
+    ip = request.remote_addr
+    s = treat(query, bgp_list, ip, datasource)
+    tab = doTab(s)
+    d = dict({'ok': s != 'Error', 'val': tab})
+    return jsonify(result=d)
 
 
 def loadWebConfig(configFile) :
