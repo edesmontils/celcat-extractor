@@ -263,7 +263,6 @@ function query() {
 }
 
 function new_query() {
-    alert('New')
     t = '<div class="post">';
     t = t + '<h2 class="title">Query editor</h2>';
     t = t + '<div class="story">';
