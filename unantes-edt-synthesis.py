@@ -186,14 +186,10 @@ def help():
 
 @app.route('/envoyer', methods=['post'])
 def envoyer():
-    query = request.form['requete']
-    bgp_list = request.form['bgp_list']
-    # print('Recieved BGP:',bgp_list)
-    if bgp_list is '':
-        bgp_list = ''
-    ip = request.remote_addr
-    s = treat(query, bgp_list, ip, datasource)
-    tab = doTab(s)
+    nom = request.form['nom']
+    s = 'ok'
+    tab = 'topo '+nom
+    print(request.form)
     d = dict({'ok': s != 'Error', 'val': tab})
     return jsonify(result=d)
 
