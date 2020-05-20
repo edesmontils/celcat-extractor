@@ -208,6 +208,20 @@ function get_histo() {
     $('posts').appear();
 }
 
+function bmr(nom,prenom) {
+    new Ajax.Request('/bmr/'+nom+'/'+prenom, {
+        method: 'get',
+        onSuccess: function (trs) {
+            $('posts').hide();
+            $('posts').update(trs.responseText);
+            $('posts').appear();
+        },
+        onFailure: function () {
+            alert('bmr: Impossible !')
+        }
+    });
+}
+
 function query() {
     mss = '<p>'+''+'</p>'
 

@@ -93,7 +93,8 @@ def index():
         # username = cas.username,
         # display_name = cas.attributes['cas:displayName'],
         nom_appli=ctx.name, 
-        version=ctx.version
+        version=ctx.version,
+        listeMembres=[ctx.personnel_dpt[x] for x in ctx.personnel_dpt if ctx.personnel_dpt[x][2]!='AUTRE']
     )
 
 @app.route('/news')
@@ -134,6 +135,9 @@ def apropos():
             s += etree.tostring(cont, encoding='utf8').decode('utf8')
     return s
 
+@app.route('/end')
+def end():
+    return "<p>Bases purgées...</p>"
 
 @app.route('/help')
 def help():

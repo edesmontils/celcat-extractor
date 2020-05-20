@@ -63,11 +63,11 @@ Released for free under a Creative Commons Attribution 2.5 License
  	<div id="categories" class="boxed">
 		<h2 class="heading">Personnel Info</h2>
 		<div class="content">
-			<!--ul>
-			{% for nom in listeNoms %}
-		<li> <a href='#' onClick='new Effect.Highlight(this); db( "{{nom}}" );return false;' style='cursor:pointer'><img src="{{url_for('static',filename='images/Database.png')}}" alt='Base {{nom}}' title='Base {{nom}}' width='32'/> {{nom}}</a></li>
+			<ul>
+			{% for m in listeMembres %}
+		<li> <a href='#' onClick='new Effect.Highlight(this); bmr( "{{m[0]}}", "{{m[1]}}" );return false;' style='cursor:pointer'><img src="{{url_for('static',filename='images/Database.png')}}" alt='{{m[0]}} {{m[1]}}' title='{{m[0]}} {{m[1]}}' width='32'/> {{m[0]}} {{m[1]}}</a></li>
 			{% endfor %}
-			</ul-->
+			</ul>
 		</div>
 	</div> 
 
