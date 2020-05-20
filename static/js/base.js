@@ -90,20 +90,47 @@ function clear() {
 	
 	// Variables de gestion de la mémoire initialisées.
 	rs = new RequestSet();
-	result_type = null;
-	current_nom = "";current_prenom = "";
-	current_course = ""; current_groupe="" ; current_type="bp" ; 
+    result_type = null;
+    current_nom = "";current_prenom = "";
+    current_course = ""; current_groupe="" ; current_type="bp" ; 
     current_debut="" ; current_fin="";current_resp=false;
-	current_result = null;
-
+    current_result = null;
+    
 	// mémorisation des messages et aides pour éviter de charger le serveur.
 	messages_aides = null;
 	messages = null;
 	messages_mentions = null;
 	messages_apropos = null;
-	
-	// Page effacée
+
+    // Page effacée
     $('posts').update("");
+}
+
+function effacer() {
+    
+    // Variables de gestion de la mémoire initialisées.
+    result_type = null;
+    current_nom = "";current_prenom = "";
+    current_course = ""; current_groupe="" ; current_type="bp" ; 
+    current_debut="" ; current_fin="";current_resp=false;
+    current_result = null;
+    
+    // Page effacée
+    if ($('results')) {
+        $('nom').setValue(current_nom);
+        $('prenom').setValue(current_prenom);
+        $('module').setValue(current_course);
+        $('groupe').setValue(current_groupe);
+        $('debut').setValue(current_debut);
+        $('fin').setValue(current_fin);
+        $('resp').setValue(current_resp);
+        if (current_type=="bm") { $('bm').setValue(true);}
+        else {
+            if (current_type=="bg" ) { $('bg').setValue(true);}
+            else { $('bp').setValue(true);}
+        }
+        $('results').update("");
+    }
 }
 
 function init() {
@@ -253,7 +280,8 @@ function new_query() {
     t = t + '</ul></fieldset>'
 
     t = t + '   <input type="button" name="Soumettre" value="Envoyer" onClick="query(); return false;" style="cursor:pointer"  id="send"/>';
- 
+    t = t + '   <input type="button" name="Effacer" value="Effacer" onClick="effacer(); return false;" style="cursor:pointer"  id="eff"/>';
+
     t = t + '   </form></p>';
     t = t + '   <div id="message"></div>';
     t = t + '   <div id="results"></div>';

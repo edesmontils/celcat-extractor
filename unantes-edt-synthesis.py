@@ -54,6 +54,8 @@ class Context(object):
         self.debug = False
         self.version = '1.0'
         self.name = 'Name'
+        self.personnel_dpt = []
+        self.cfg = None
 
     def start(self):
         pass
@@ -187,9 +189,34 @@ def help():
 @app.route('/envoyer', methods=['post'])
 def envoyer():
     nom = request.form['nom']
-    s = 'ok'
+    s = 'error'
     tab = 'topo '+nom
     print(request.form)
+
+    if request.form['type']=='bp': 
+        print('BP received')
+        tab = '<pre>\n' + doBP(ctx.cfg, request.form['nom'], request.form['prenom'], 
+                        request.form['course'], request.form['groupe'], request.form['debut'], 
+                        request.form['fin'], ctx.personnel_dpt) + '</pre>'
+        s = 'ok'
+        print(tab)
+    elif request.form['type']=='bm': 
+        print('BM received')
+        tab = '<pre>\n' + doBM(ctx.cfg, request.form['nom'], request.form['prenom'], 
+                        request.form['course'], request.form['groupe'], 
+                        request.form['resp']=='true', request.form['debut'], 
+                        request.form['fin'], ctx.personnel_dpt) + '</pre>'
+        s = 'ok'
+        print(tab)
+    elif request.form['type']=='bg': 
+        print('BG received')
+        tab = '<pre>\n' + doBG(ctx.cfg, request.form['nom'], request.form['prenom'], 
+                        request.form['course'], request.form['groupe'], 
+                        request.form['resp']=='true', request.form['debut'], 
+                        request.form['fin'], ctx.personnel_dpt) + '</pre>'
+        s = 'ok'
+        print(tab)
+    else: print('Type inconnu')
     d = dict({'ok': s != 'Error', 'val': tab})
     return jsonify(result=d)
 
@@ -424,9 +451,9 @@ def load(cfg, ics, debut, fin):
             ev = Creneau(e)
 
             ok = True
-            if debut is not None :
+            if debut is not '' :
                 if ev.begin < debut : ok = False
-            if fin is not None :
+            if fin is not '' :
                 if ev.end > fin : ok = False
 
             if ok :
@@ -454,8 +481,7 @@ def analyse(lev, code):
         if not evt in sorted_events : sorted_events[evt] = []
         sorted_events[evt].append(c)
 
-    print()
-    print("=== Volume horaire pour « " + code + " »")
+    s = "\n === Volume horaire pour « "+ code + " »\n"
     for ct in sorted_events:
         evts = sorted_events[ct]
         # Sum durations for events of course type
@@ -467,23 +493,194 @@ def analyse(lev, code):
         course_type_total_hours = format_string.format(course_type_total.total_seconds() / 3600)
 
         # Output
-        print(f'− {ct} : {str(course_type_total)} ({str(course_type_total_hours)})')    
+        s = s + f'− {ct} : {str(course_type_total)} ({str(course_type_total_hours)})' + "\n"
+    return s
 
 
-def getModules(cfg, args, match_np, type_list):
+def getModulesInfo(cfg, nom, prenom, debut, fin, match_np, type_list):
     lcf = []
-    if (args.nom is not None) and (args.prenom is not None):
+    if (nom is not '') and (prenom is not ''):
         test = lambda rx, ry, x, y : match_np.match(rx+', '+ry) # x==rx and y==ry
     else: test = lambda rx, ry, x, y : True
     with open(cfg['File Names']['Teachers'], 'r') as csvfile:
         dct = csv.DictReader(csvfile, delimiter='\t')
         for row in dct:
-            if test(row['Nom'], row['Prénom'], args.nom, args.prenom) :
-                (lc, lp, lm, lg) = load(row['id'])
+            if test(row['Nom'], row['Prénom'], nom, prenom) :
+                (lc, lp, lm, lg) = load(cfg,row['id'],debut,fin)
                 if lc is not None:
                     lcf += [c.code_matiere for c in lc if (c.type in type_list)]
-
     return list(set(lcf))
+
+def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
+    s = ''
+
+    if (nom is not '') and (prenom is not ''):
+        nom = nom.upper()
+        prenom = prenom.capitalize()
+        match_np = re.compile(nom+', '+prenom)
+    else: match_np = re.compile('.*')
+
+    if module is not '':
+        match_m = re.compile(module)
+    else: match_m = re.compile('.*')
+
+    if groupe is not '':
+        match_g = re.compile(groupe)
+    else: match_g = re.compile('.*')    
+
+    s += "=========================\n"
+    s += "= Analyse par personnel =\n"
+    s += "=========================\n\n"
+    if (nom is not '') and (prenom is not ''):
+        test = lambda rx, ry, x, y : match_np.match(rx+', '+ry)
+    else: test = lambda rx, ry, x, y : True
+    with open(cfg['File Names']['Teachers'], 'r') as csvfile:
+        dct = csv.DictReader(csvfile, delimiter='\t')
+        for row in dct:
+            if test(row['Nom'], row['Prénom'], nom, prenom) :
+                nomp = row['Nom']+', '+row['Prénom']
+                if nomp in personnel_dpt.keys(): statut =  nomp+' ('+personnel_dpt[nomp][2]+')'
+                else: statut = nomp 
+                s += "==================================================\n"
+                s += "==> Recherche pour : "+statut+"\n"
+                (lc, lp, lm, lg) = load(cfg, row['id'], debut, fin)
+                if lc is not None:
+                    if module is not '' :
+                        for m in lm :
+                            if match_m.match(m) is not None : 
+                                if groupe is not '' :
+                                    for g in lg :
+                                        if match_g.match(g) is not None :
+                                            s += analyse([c for c in lc if (m == c.code_matiere) and (g in c.groupe) ], m+'|'+g)
+                                else: s += analyse([c for c in lc if m == c.code_matiere], m)                            
+                    elif  groupe is not '' :
+                        for g in lg :
+                            if match_g.match(g) is not None :  
+                                s += analyse([c for c in lc if g in c.groupe], g)
+                    else: 
+                        for m in lm :
+                            s += analyse([c for c in lc if m == c.code_matiere], m)
+                s += "==================================================\n\n"
+        s += "\n"
+    return s
+
+def doBM(cfg, nom, prenom, module, groupe, resp, debut, fin, personnel_dpt) :
+    s = ''
+
+    if (nom is not '') and (prenom is not ''):
+        nom = nom.upper()
+        prenom = prenom.capitalize()
+        match_np = re.compile(nom+', '+prenom)
+    else: match_np = re.compile('.*')
+
+    if module is not '':
+        match_m = re.compile(module)
+    else: match_m = re.compile('.*')
+
+    if groupe is not '':
+        match_g = re.compile(groupe)
+    else: match_g = re.compile('.*')      
+
+    s += "======================\n"
+    s += "= Analyse par module =\n"
+    s += "======================\n\n"
+    if module is not '':
+        test = lambda rx, x : match_m.match(rx) is not None
+    else: test = lambda rx, x : True
+    if resp and (nom is not '') and (prenom is not ''): lcf = getModulesInfo(cfg, nom, prenom, debut, fin, match_np, ['CM info'])
+    else: lcf = []
+    with open(cfg['File Names']['Courses'], 'r') as csvfile:
+        dct = csv.DictReader(csvfile, delimiter='\t')
+        for row in dct:
+            if resp and (nom is not '') and (prenom is not '') and (row['Code'] in lcf):
+                s += "=================== "+ nom+ ", "+prenom +"  ===============================\n"
+                s += "==> Recherche pour : "+row['Nom']+"\n"
+                s += "Code : "+row['Code']+"\n"
+                (lc, lp, lm, lg) = load(cfg, row['id'], debut, fin)
+                for p in lp : s += analyse([c for c in lc if p in c.personnel ], p)
+                s += "==================================================\n\n\n"
+            elif not(resp) and test(row['Code'], module) : 
+                s += "==================================================\n"
+                s += "==> Recherche pour : "+row['Nom']+"\n"
+                s += "Code : "+row['Code']+"\n"
+                (lc, lp, lm, lg) = load(cfg, row['id'], debut, fin)
+                if lc is not None:
+                    if (nom is not '') and (prenom is not ''):
+                        for p in lp :
+                            if match_np.match(p) is not None : 
+                                if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
+                                else: statut = p 
+                                if groupe is not '' : 
+                                    for g in lg :
+                                        if match_g.match(g) is not None :
+                                            s += analyse([c for c in lc if (p in c.personnel) and (g in c.groupe) ], statut+'|'+g)
+                                else: s += analyse([c for c in lc if p in c.personnel ], statut)
+                    elif  groupe is not '' :
+                        for g in lg :
+                            if match_g.match(g) is not None : 
+                                s += analyse([c for c in lc if g in c.groupe], g)
+                    else: 
+                        for p in lp :
+                            if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
+                            else: statut = p
+                            s += analyse([c for c in lc if p in c.personnel ], statut)
+                s += "==================================================\n\n\n"
+        s += "\n"
+    return s
+
+def doBG(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
+    s = ''
+
+    if (nom is not '') and (prenom is not ''):
+        nom = nom.upper()
+        prenom = prenom.capitalize()
+        match_np = re.compile(nom+', '+prenom)
+    else: match_np = re.compile('.*')
+
+    if module is not '':
+        match_m = re.compile(module)
+    else: match_m = re.compile('.*')
+
+    if groupe is not '':
+        match_g = re.compile(groupe)
+    else: match_g = re.compile('.*')      
+
+    s += "======================\n"
+    s += "= Analyse par groupe =\n"
+    s += "======================\n\n"
+    if groupe is not '':
+        test = lambda rx, x : match_g.match(rx) is not None 
+    else: test = lambda rx, x : True
+    with open(cfg['File Names']['Groups'], 'r') as csvfile:
+        dct = csv.DictReader(csvfile, delimiter='\t')
+        for row in dct:
+            if test(row['Code'], groupe) : 
+                s += "==================================================\n"
+                s += "==> Recherche pour : "+row['Code']+"\n"
+                (lc, lp, lm, lg) = load(cfg, row['id'], debut, fin)
+                if lc is not None:
+                    if (nom is not '') and (prenom is not ''):
+                        for p in lp :
+                            if match_np.match(p) is not None : 
+                                if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
+                                else: statut = p
+                                if module is not '' :
+                                    for m in lm :
+                                        if match_m.match(m) is not None :
+                                            s += analyse([c for c in lc if (m == c.code_matiere) and (p in c.personnel) ], statut+'|'+m)
+                                else: s += analyse([c for c in lc if p in c.personnel ], statut)
+                    elif  module is not '' :
+                        for m in lm :
+                            if match_m.match(m) is not None :  
+                                s += analyse([c for c in lc if m == c.code_matiere], m)
+                    else: 
+                        for p in lp :
+                            if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
+                            else: statut = p
+                            s += analyse([c for c in lc if p in c.personnel ], statut)
+                s += "==================================================\n\n\n"
+        s += "\n"
+    return s
 
 #==================================================
 #==================================================
@@ -493,18 +690,18 @@ if __name__ == "__main__":
     #=== Gestion des arguments
 
     parser = argparse.ArgumentParser(description='Celcat explorer')
-    parser.add_argument("-n", "--nom", default=None, dest="nom", help="Nom d'une personne (en majuscules)")
-    parser.add_argument("-p", "--prenom", default=None, dest="prenom", help="Prenom d'une personne (minuscules, sauf première lettre)")
-    parser.add_argument("-m", "--module", default=None, dest="module", help="Code du module")
-    parser.add_argument("-g", "--groupe", default=None, dest="groupe", help="Code du groupe")
+    parser.add_argument("-n", "--nom", default='', dest="nom", help="Nom d'une personne (en majuscules)")
+    parser.add_argument("-p", "--prenom", default='', dest="prenom", help="Prenom d'une personne (minuscules, sauf première lettre)")
+    parser.add_argument("-m", "--module", default='', dest="module", help="Code du module")
+    parser.add_argument("-g", "--groupe", default='', dest="groupe", help="Code du groupe")
     parser.add_argument("-bm", action="store_true", help="Recherche par module (-m XXX obligatoire)")
     parser.add_argument("-bp", action="store_true", help="Recherche par personne (-n NNN et -p PPP obligatoires)")
     parser.add_argument("-bg", action="store_true", help="Recherche par groupe (-g GGG obligatoire)")
 
     parser.add_argument("-resp", action="store_true", help="Des modules où la personne donne des cours (si -bm, -p et -n)" )
 
-    parser.add_argument("-d", "--debut", default=None, dest="debut", help="date de début des créneaux à analyser (AAAA-MM-JJ)" )    
-    parser.add_argument("-f", "--fin", default=None, dest="fin", help="date de fin des créneaux à analyser (AAAA-MM-JJ)" ) 
+    parser.add_argument("-d", "--debut", default='', dest="debut", help="date de début des créneaux à analyser (AAAA-MM-JJ)" )    
+    parser.add_argument("-f", "--fin", default='', dest="fin", help="date de fin des créneaux à analyser (AAAA-MM-JJ)" ) 
 
     parser.add_argument("-w", "--web", action="store_true", help="lance la version serveur Web (les autres paramètres sont ignorés)")
 
@@ -533,11 +730,16 @@ if __name__ == "__main__":
     if args.web :
         loadWebConfig('./web-config.xml')
         try:
-            print('Running ', ctx.name ,' on <http://', cfg['Web']['host']+':'+cfg['Web']['port'], '>')
+            ctx.personnel_dpt = personnel_dpt
+            ctx.cfg = cfg
+            ctx.debug = True
+            ctx.host = cfg['Web']['host']
+            ctx.port = cfg['Web']['port']
+            print('Running ', ctx.name ,' on <http://', ctx.host +':'+ ctx.port, '>')
             ctx.start()
             app.run(
-                host=cfg['Web']['host'],
-                port=int(cfg['Web']['port']),
+                host=ctx.host,
+                port=int(ctx.port),
                 debug=ctx.debug
             )
         except KeyboardInterrupt:
@@ -545,148 +747,14 @@ if __name__ == "__main__":
         finally:
             ctx.stop()
     else:
-        print("Préparation des données")
-
-        if (args.nom is not None) and (args.prenom is not None):
-            args.nom = args.nom.upper()
-            args.prenom = args.prenom.capitalize()
-            match_np = re.compile(args.nom+', '+args.prenom)
-        else: match_np = re.compile('.*')
-
-        if args.module is not None:
-            #args.module = args.module.upper()
-            match_m = re.compile(args.module)
-        else: match_m = re.compile('.*')
-
-        if args.groupe is not None:
-            #args.groupe = args.module.upper()
-            match_g = re.compile(args.groupe)
-        else: match_g = re.compile('.*')
-
-        if args.bm and args.resp and (args.nom is not None) and (args.prenom is not None) :
-            lcf = getModules(cfg, args, match_np, 'CM info')
-        else: lcf = []
-
-        print()
-
         #=== Lancement des traitements
         if args.bp:
-            print("=========================")
-            print("= Analyse par personnel =")
-            print("=========================\n")
-            if (args.nom is not None) and (args.prenom is not None):
-                test = lambda rx, ry, x, y : match_np.match(rx+', '+ry) # x==rx and y==ry
-            else: test = lambda rx, ry, x, y : True
-            with open(cfg['File Names']['Teachers'], 'r') as csvfile:
-                dct = csv.DictReader(csvfile, delimiter='\t')
-                for row in dct:
-                    if test(row['Nom'], row['Prénom'], args.nom, args.prenom) :
-                        nomp = row['Nom']+', '+row['Prénom']
-                        if nomp in personnel_dpt.keys(): statut =  nomp+' ('+personnel_dpt[nomp][2]+')'
-                        else: statut = nomp 
-                        print("==================================================")
-                        print("==> Recherche pour : "+statut)
-                        (lc, lp, lm, lg) = load(cfg, row['id'], args.debut, args.fin)
-                        if lc is not None:
-                            if args.module is not None :
-                                for m in lm :
-                                    if match_m.match(m) is not None : #m == args.module : 
-                                        if args.groupe is not None :
-                                            for g in lg :
-                                                if match_g.match(g) is not None :
-                                                    analyse([c for c in lc if (m == c.code_matiere) and (g in c.groupe) ], m+'|'+g)
-                                        else: analyse([c for c in lc if m == c.code_matiere], m)                            
-                            elif  args.groupe is not None :
-                                for g in lg :
-                                    if match_g.match(g) is not None : #m == args.module : 
-                                        analyse([c for c in lc if g in c.groupe], g)
-                            else: 
-                                for m in lm :
-                                    analyse([c for c in lc if m == c.code_matiere], m)
-                        print("==================================================\n\n")
-                print()
+            print(doBP(cfg, args.nom, args.prenom, args.module, args.groupe, args.resp, args.debut, args.fin, personnel_dpt))
 
         if args.bm:
-            print("======================")
-            print("= Analyse par module =")
-            print("======================\n")
-            if args.module is not None:
-                test = lambda rx, x : match_m.match(rx) is not None # x==rx
-            else: test = lambda rx, x : True
-            with open(cfg['File Names']['Courses'], 'r') as csvfile:
-                dct = csv.DictReader(csvfile, delimiter='\t')
-                for row in dct:
-                    if args.resp and (args.nom is not None) and (args.prenom is not None) and (row['Code'] in lcf):
-                        print("=================== ", args.nom, ", ",args.prenom ,"  ===============================")
-                        print("==> Recherche pour : "+row['Nom'])
-                        print("Code : "+row['Code'])
-                        (lc, lp, lm, lg) = load(cfg, row['id'], args.debut, args.fin)
-                        for p in lp : analyse([c for c in lc if p in c.personnel ], p)
-                        print("==================================================\n\n")
-                    elif not(args.resp) and test(row['Code'], args.module) : 
-                        print("==================================================")
-                        print("==> Recherche pour : "+row['Nom'])
-                        print("Code : "+row['Code'])
-                        (lc, lp, lm, lg) = load(cfg, row['id'], args.debut, args.fin)
-                        if lc is not None:
-                            if (args.nom is not None) and (args.prenom is not None):
-                                for p in lp :
-                                    if match_np.match(p) is not None : #p == args.nom+', '+args.prenom: 
-                                        if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
-                                        else: statut = p 
-                                        if args.groupe is not None : 
-                                            for g in lg :
-                                                if match_g.match(g) is not None :
-                                                    analyse([c for c in lc if (p in c.personnel) and (g in c.groupe) ], statut+'|'+g)
-                                        else: analyse([c for c in lc if p in c.personnel ], statut)
-                            elif  args.groupe is not None :
-                                for g in lg :
-                                    if match_g.match(g) is not None : #m == args.module : 
-                                        analyse([c for c in lc if g in c.groupe], g)
-                            else: 
-                                for p in lp :
-                                    if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
-                                    else: statut = p
-                                    analyse([c for c in lc if p in c.personnel ], statut)
-
-
-                        print("==================================================\n\n")
-                print()
+            print(doBM(cfg, args.nom, args.prenom, args.module, args.groupe, args.resp, args.debut, args.fin, personnel_dpt))
 
         if args.bg: 
-            print("======================")
-            print("= Analyse par groupe =")
-            print("======================\n")
-            if args.groupe is not None:
-                test = lambda rx, x : match_g.match(rx) is not None #  x==rx
-            else: test = lambda rx, x : True
-            with open(cfg['File Names']['Groups'], 'r') as csvfile:
-                dct = csv.DictReader(csvfile, delimiter='\t')
-                for row in dct:
-                    if test(row['Code'], args.groupe) : 
-                        print("==================================================")
-                        print("==> Recherche pour : "+row['Code'])
-                        (lc, lp, lm, lg) = load(cfg, row['id'], args.debut, args.fin)
-                        if lc is not None:
-                            if (args.nom is not None) and (args.prenom is not None):
-                                for p in lp :
-                                    if match_np.match(p) is not None : # p == args.nom+', '+args.prenom: 
-                                        if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
-                                        else: statut = p
-                                        if args.module is not None :
-                                            for m in lm :
-                                                if match_m.match(m) is not None :
-                                                    analyse([c for c in lc if (m == c.code_matiere) and (p in c.personnel) ], statut+'|'+m)
-                                        else: analyse([c for c in lc if p in c.personnel ], statut)
-                            elif  args.module is not None :
-                                for m in lm :
-                                    if match_m.match(m) is not None : #m == args.module : 
-                                        analyse([c for c in lc if m == c.code_matiere], m)
-                            else: 
-                                for p in lp :
-                                    if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
-                                    else: statut = p
-                                    analyse([c for c in lc if p in c.personnel ], statut)
-                        print("==================================================\n\n")
-                print()
+            print(doBG(cfg, args.nom, args.prenom, args.module, args.groupe, args.resp, args.debut, args.fin, personnel_dpt))
+
         print("Fin")
