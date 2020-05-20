@@ -96,48 +96,6 @@ def index():
         version=ctx.version
     )
 
-# @app.route('/end')
-# def end():
-#     return "<p>Bases purgées...</p>"
-
-
-# @app.route('/ex/<datasource>')
-# def ex(datasource):
-#     d = []
-#     parser = etree.XMLParser(recover=True, strip_cdata=True)
-#     if datasource == 'dbpedia3.8':
-#         tree = etree.parse('tests/test4.xml', parser)
-#     elif datasource == 'lift':
-#         tree = etree.parse('tests/test1.xml', parser)
-#     else:
-#         return jsonify(result=d)
-#     #---
-#     #dtd = etree.DTD('http://documents.ls2n.fr/be4dbp/log.dtd')
-#     #assert dtd.validate(tree), 'non valide au chargement : %s' % (
-#     #    dtd.error_log.filter_from_errors()[0])
-#     #---
-#     # print('DTD valide !')
-
-#     nbe = 0  # nombre d'entries traitées
-#     for entry in tree.getroot():
-#         if entry.tag == 'entry':
-#             nbe += 1
-#             valid = entry.get("valid")
-#             if valid is not None:
-#                 if valid in ['TPF', 'EmptyTPF']:
-#                     # print('(%d) new entry to add ' %nbe)
-#                     rep = ''
-#                     for x in entry:
-#                         if x.tag == 'bgp':
-#                             if len(x) > 0:
-#                                 rep += etree.tostring(x).decode('utf-8')
-#                     # print(rep)
-#                     d.append((entry.find('request').text, datasource, rep))
-#                 # else: print('(%d) entry not loaded : %s' % (n,valid))
-#             # else: print('(%d) entry not loaded (not validated)' % n)
-#     return jsonify(result=d)
-
-
 @app.route('/news')
 def news():
     listeMessages = ctx.tree.getroot().findall('listeMessages/message')
@@ -219,6 +177,30 @@ def envoyer():
     else: print('Type inconnu')
     d = dict({'ok': s != 'Error', 'val': tab})
     return jsonify(result=d)
+
+@app.route('/bp/<nom>/<prenom>')
+def bp(nom, prenom):
+    s = doBP(ctx.cfg, nom, prenom, '', '', '', '', ctx.personnel_dpt)
+    d = "<pre> "+s+"</pre>"
+    return d #jsonify(result=d)
+
+@app.route('/bm/<course>')
+def bm(course):
+    s = doBM(ctx.cfg, '', '', course, '', False, '', '', ctx.personnel_dpt)
+    d = "<pre> "+s+"</pre>"
+    return d #jsonify(result=d)
+
+@app.route('/bmr/<nom>/<prenom>')
+def bmr(nom, prenom):
+    s = doBM(ctx.cfg, nom, prenom, '', '', True, '', '', ctx.personnel_dpt)
+    d = "<pre> "+s+"</pre>"
+    return d #jsonify(result=d)
+
+@app.route('/bg/<groupe>')
+def bg(groupe):
+    s = doBP(ctx.cfg, '', '', '', groupe, '', '', ctx.personnel_dpt)
+    d = "<pre> "+s+"</pre>"
+    return d #jsonify(result=d)
 
 
 def loadWebConfig(configFile) :
