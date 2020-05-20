@@ -734,12 +734,12 @@ if __name__ == "__main__":
     else:
         #=== Lancement des traitements
         if args.bp:
-            print(doBP(cfg, args.nom, args.prenom, args.module, args.groupe, args.resp, args.debut, args.fin, personnel_dpt))
+            print(doBP(cfg, args.nom, args.prenom, args.module, args.groupe, args.debut, args.fin, personnel_dpt))
 
         if args.bm:
             print(doBM(cfg, args.nom, args.prenom, args.module, args.groupe, args.resp, args.debut, args.fin, personnel_dpt))
 
         if args.bg: 
-            print(doBG(cfg, args.nom, args.prenom, args.module, args.groupe, args.resp, args.debut, args.fin, personnel_dpt))
+            print(doBG(cfg, args.nom, args.prenom, args.module, args.groupe, args.debut, args.fin, personnel_dpt))
 
         print("Fin")
