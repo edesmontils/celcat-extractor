@@ -65,7 +65,7 @@ Released for free under a Creative Commons Attribution 2.5 License
 		<div class="content">
 			<ul>
 			{% for m in listeMembres %}
-		<li> <a href='#' onClick='new Effect.Highlight(this); bmr( "{{m[0]}}", "{{m[1]}}" );return false;' style='cursor:pointer'><img src="{{url_for('static',filename='images/Database.png')}}" alt='{{m[0]}} {{m[1]}}' title='{{m[0]}} {{m[1]}}' width='32'/> {{m[0]}} {{m[1]}}</a></li>
+		<li> <a href='#' onClick='new Effect.Highlight(this); bmr( "{{m[0]}}", "{{m[1]}}" );return false;' style='cursor:pointer'><!--img src="{{url_for('static',filename='images/Database.png')}}" alt='{{m[0]}} {{m[1]}}' title='{{m[0]}} {{m[1]}}' width='32'/--> {{m[0]}} {{m[1]}}</a></li>
 			{% endfor %}
 			</ul>
 		</div>
