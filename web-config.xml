@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<!DOCTYPE mab SYSTEM './web-config.dtd'>
+
+<mab version="0.1" debug="false" name="Celcat Extractor">
+	<!-- numéro de version de l'application -->
+
+	<aPropos>
+		<p>Cette petite application Web a été développée à des fins de démonstration. Elle ne peut donc
+			aucunement être utilisée pour d'autre desseins. Elle est mise à disposition dans la
+			mesure où son utilisation n'est pas détournée. L'auteur ne peut être considéré
+			responsable des dysfonctionnements ou pertes de données en cas d'utilisation détournée
+			et se réserve le droit de la supprimer à tout moment.</p>
+	</aPropos>
+
+	<mentions>
+		<p>Application développée et testée avec Python 3.6.</p>
+
+		<p>Design adapted from "<a href="http://www.freecsstemplates.org/preview/dusplic/">dusplic</a>" de <a href="http://www.freecsstemplates.org/"><strong>Free CSS Templates</strong></a>, under license <a href="./license.txt">Creative Common</a>.</p>
+		<p>Icons from <a href="http://www.iconspedia.com/">http://www.iconspedia.com/</a> in the set "<a href="http://www.iconspedia.com/pack/basic-set-2061/">Basic set</a>" of PixelMixer (<a href="http://pixel-mixer.com/">http://pixel-mixer.com/</a>) under license CC-by-sa.<br/>
+		<!--img src="http://www.iconspedia.com/common/images/logo.jpg" width="100" alt="CC-by-sa"/--></p>
+
+		<p>Effects and JavaScript frameworks <a href="http://www.prototypejs.org">prototypejs.org<!--img src="http://www.prototypejs.org/images/logo-home.gif" alt="prototypejs.org" /--></a> et <a href="http://www.script.aculo.us">script.aculo.us<!--img src="http://www.script.aculo.us/scriptaculous_logo.png" width="300" alt="script.aculo.us"/--></a>.</p>
+
+		<!--p><a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/2.0/fr/"><img
+					alt="Contrat Creative Commons" style="border-width:0"
+					src="http://i.creativecommons.org/l/by-nc-sa/2.0/fr/88x31.png"/></a><br/>Cette
+			application est mise à disposition sous la licence <a rel="license"
+				href="http://creativecommons.org/licenses/by-nc-sa/2.0/fr/">Creative Commons
+				Paternité - Pas d'Utilisation Commerciale - Partage des Conditions Initiales à
+				l'Identique 2.0 France</a> (<a
+				href="http://creativecommons.org/licenses/by-nc-sa/2.0/fr/legalcode"
+				>http://creativecommons.org/licenses/by-nc-sa/2.0/fr/legalcode</a>).</p-->
+		<p>(c) E. Desmontils, University of Nantes, France, 2020</p>
+
+
+	</mentions> 
+
+	<aides> 
+		<div class="post">
+			<h2 class="title">Help</h2>
+			<div class="story">
+				<!--p><img src="./static/images/home_64.png" width="32" alt="aide"/> : permet de consulter les
+					informations sur l'application.</p-->
+				<p><img src="./static/images/pencil_64.png" width="32" alt="éditer"/> : allow to edit a query :</p><ul>
+					<li>from left menu bar, to build a new query (the last edited query is shown by default) ;</li>
+					<li>from query bag, to modify a query.</li>
+				</ul>
+				<p><img src="./static/images/add_64.png" width="32" alt="aide"/> : to add a query to the query bag.</p>
+				<p><img src="./static/images/buy_64.png" width="32" alt="mémoire"/> : to show the query bag with refence queries and queries saved during the session. Fro each saved query, it swhow the execution date, the query, actions that ca be done (edit it or, olny for non refences queries, suppress it), the query status ( success <img src="./static/images/tick_64.png" width="16" alt="ok"/> or error <img src="./static/images/block_64.png" width="16" alt="ko"/>)) and if this is a reference query. Be carefull, reloading the web page will lost saved queries.</p>
+				<p><img src="./static/images/help_64.png" width="32" alt="aide"/> : to show this help.</p>
+				<p><img src="./static/images/gear_64.png" width="32" alt="exécuter"/> : to run the query.</p>
+				<p><img src="./static/images/delete_64.png" width="32" alt="supprimer"/> : to delete a saved query (reference queries can not be deleted).</p>
+				<p><img src="./static/images/Database.png" width="32" alt="base de données"/>ADataset : to show a description and a sample if the dataset (ADataset) .</p>
+				<p><img src="./static/images/shield_64.png" width="32" alt="base de données"/> : to show legal mentions</p>
+			</div>;
+		</div>
+	</aides>
+
+	<!-- messages d'acceuil -->
+	<listeMessages>
+		<message titre="Hello" date="2020-05-17" auteur="E.D.">
+		<p>Bonjour !</p>
+		</message>
+	</listeMessages>
+
+</mab>
