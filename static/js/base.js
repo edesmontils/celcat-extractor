@@ -209,7 +209,7 @@ function get_histo() {
 }
 
 function bmr(nom,prenom) {
-    new Ajax.Request('/bmr/'+nom+'/'+prenom, {
+    new Ajax.Request('/bp/'+nom+'/'+prenom, {
         method: 'get',
         onSuccess: function (trs) {
             $('posts').hide();
