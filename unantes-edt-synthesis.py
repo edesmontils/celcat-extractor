@@ -174,7 +174,7 @@ def envoyer():
         print('BG received')
         tab = '<pre>\n' + doBG(ctx.cfg, request.form['nom'], request.form['prenom'], 
                         request.form['course'], request.form['groupe'], 
-                        request.form['resp']=='true', request.form['debut'], 
+                        request.form['debut'], 
                         request.form['fin'], ctx.personnel_dpt) + '</pre>'
         s = 'ok'
         print(tab)
@@ -186,26 +186,25 @@ def envoyer():
 def bp(nom, prenom):
     s = doBP(ctx.cfg, nom, prenom, '', '', '', '', ctx.personnel_dpt)
     d = "<pre> "+s+"</pre>"
-    return d #jsonify(result=d)
+    return d 
 
 @app.route('/bm/<course>')
 def bm(course):
     s = doBM(ctx.cfg, '', '', course, '', False, '', '', ctx.personnel_dpt)
     d = "<pre> "+s+"</pre>"
-    return d #jsonify(result=d)
+    return d 
 
 @app.route('/bmr/<nom>/<prenom>')
 def bmr(nom, prenom):
     s = doBM(ctx.cfg, nom, prenom, '', '', True, '', '', ctx.personnel_dpt)
     d = "<pre> "+s+"</pre>"
-    return d #jsonify(result=d)
+    return d 
 
 @app.route('/bg/<groupe>')
 def bg(groupe):
-    s = doBP(ctx.cfg, '', '', '', groupe, '', '', ctx.personnel_dpt)
+    s = doBG(ctx.cfg, '', '', '', groupe, '', '', ctx.personnel_dpt)
     d = "<pre> "+s+"</pre>"
-    return d #jsonify(result=d)
-
+    return d 
 
 def loadWebConfig(configFile) :
     XMLparser = etree.XMLParser(recover=True, strip_cdata=True)
