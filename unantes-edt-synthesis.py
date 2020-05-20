@@ -717,10 +717,10 @@ if __name__ == "__main__":
         try:
             ctx.personnel_dpt = personnel_dpt
             ctx.cfg = cfg
-            ctx.debug = True
+            ctx.debug = cfg['Autre']['debug']=='True'
             ctx.host = cfg['Web']['host']
             ctx.port = cfg['Web']['port']
-            print('Running ', ctx.name ,' on <http://', ctx.host +':'+ ctx.port, '>')
+            print('Running ', ctx.name ,' on <http://'+ctx.host +':'+ ctx.port+'>')
             ctx.start()
             app.run(
                 host=ctx.host,
