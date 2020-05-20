@@ -161,7 +161,7 @@ def envoyer():
                         request.form['course'], request.form['groupe'], request.form['debut'], 
                         request.form['fin'], ctx.personnel_dpt) + '</pre>'
         s = 'ok'
-        print(tab)
+        #print(tab)
     elif request.form['type']=='bm': 
         print('BM received')
         tab = '<pre>\n' + doBM(ctx.cfg, request.form['nom'], request.form['prenom'], 
@@ -169,7 +169,7 @@ def envoyer():
                         request.form['resp']=='true', request.form['debut'], 
                         request.form['fin'], ctx.personnel_dpt) + '</pre>'
         s = 'ok'
-        print(tab)
+        #print(tab)
     elif request.form['type']=='bg': 
         print('BG received')
         tab = '<pre>\n' + doBG(ctx.cfg, request.form['nom'], request.form['prenom'], 
@@ -177,7 +177,7 @@ def envoyer():
                         request.form['debut'], 
                         request.form['fin'], ctx.personnel_dpt) + '</pre>'
         s = 'ok'
-        print(tab)
+        #print(tab)
     else: print('Type inconnu')
     d = dict({'ok': s != 'Error', 'val': tab})
     return jsonify(result=d)
@@ -498,10 +498,10 @@ def getModulesInfo(cfg, nom, prenom, debut, fin, match_np, type_list):
 
 def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
     s = ''
-
+    print(nom, prenom, module, groupe, debut, fin)
     if (nom is not '') and (prenom is not ''):
         nom = nom.upper()
-        prenom = prenom.capitalize()
+        #prenom = prenom.capitalize()
         match_np = re.compile(nom+', '+prenom)
     else: match_np = re.compile('.*')
 
@@ -522,7 +522,7 @@ def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
     with open(cfg['File Names']['Teachers'], 'r') as csvfile:
         dct = csv.DictReader(csvfile, delimiter='\t')
         for row in dct:
-            if test(row['Nom'], row['Prénom'], nom, prenom) :
+            if test(row['Nom'], row['Prénom'], nom, prenom) or (row['Nom']=="RAMPON"):
                 nomp = row['Nom']+', '+row['Prénom']
                 if nomp in personnel_dpt.keys(): statut =  nomp+' ('+personnel_dpt[nomp][2]+')'
                 else: statut = nomp 
@@ -554,7 +554,7 @@ def doBM(cfg, nom, prenom, module, groupe, resp, debut, fin, personnel_dpt) :
 
     if (nom is not '') and (prenom is not ''):
         nom = nom.upper()
-        prenom = prenom.capitalize()
+        #prenom = prenom.capitalize()
         match_np = re.compile(nom+', '+prenom)
     else: match_np = re.compile('.*')
 
@@ -618,7 +618,7 @@ def doBG(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
 
     if (nom is not '') and (prenom is not ''):
         nom = nom.upper()
-        prenom = prenom.capitalize()
+        #prenom = prenom.capitalize()
         match_np = re.compile(nom+', '+prenom)
     else: match_np = re.compile('.*')
 
