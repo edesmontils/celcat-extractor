@@ -522,7 +522,7 @@ def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
     with open(cfg['File Names']['Teachers'], 'r') as csvfile:
         dct = csv.DictReader(csvfile, delimiter='\t')
         for row in dct:
-            if test(row['Nom'], row['Prénom'], nom, prenom) or (row['Nom']=="RAMPON"):
+            if test(row['Nom'], row['Prénom'], nom, prenom):
                 nomp = row['Nom']+', '+row['Prénom']
                 if nomp in personnel_dpt.keys(): statut =  nomp+' ('+personnel_dpt[nomp][2]+')'
                 else: statut = nomp 
