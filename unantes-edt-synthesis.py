@@ -185,25 +185,25 @@ def envoyer():
 @app.route('/bp/<nom>/<prenom>')
 def bp(nom, prenom):
     s = doBP(ctx.cfg, nom, prenom, '', '', '', '', ctx.personnel_dpt)
-    d = "<pre> "+s+"</pre>"
+    d = "<pre>\n"+s+"</pre>"
     return d 
 
 @app.route('/bm/<course>')
 def bm(course):
     s = doBM(ctx.cfg, '', '', course, '', False, '', '', ctx.personnel_dpt)
-    d = "<pre> "+s+"</pre>"
+    d = "<pre>\n"+s+"</pre>"
     return d 
 
 @app.route('/bmr/<nom>/<prenom>')
 def bmr(nom, prenom):
     s = doBM(ctx.cfg, nom, prenom, '', '', True, '', '', ctx.personnel_dpt)
-    d = "<pre> "+s+"</pre>"
+    d = "<pre>\n"+s+"</pre>"
     return d 
 
 @app.route('/bg/<groupe>')
 def bg(groupe):
     s = doBG(ctx.cfg, '', '', '', groupe, '', '', ctx.personnel_dpt)
-    d = "<pre> "+s+"</pre>"
+    d = "<pre>\n"+s+"</pre>"
     return d 
 
 def loadWebConfig(configFile) :
@@ -485,7 +485,7 @@ def analyse(lev, code):
 def getModulesInfo(cfg, nom, prenom, debut, fin, match_np, type_list):
     lcf = []
     if (nom is not '') and (prenom is not ''):
-        test = lambda rx, ry, x, y : match_np.match(rx+', '+ry) # x==rx and y==ry
+        test = lambda rx, ry, x, y : match_np.match(rx+', '+ry.upper()) # x==rx and y==ry
     else: test = lambda rx, ry, x, y : True
     with open(cfg['File Names']['Teachers'], 'r') as csvfile:
         dct = csv.DictReader(csvfile, delimiter='\t')
@@ -498,11 +498,9 @@ def getModulesInfo(cfg, nom, prenom, debut, fin, match_np, type_list):
 
 def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
     s = ''
-    print(nom, prenom, module, groupe, debut, fin)
+    print('BP', nom, prenom, module, groupe, debut, fin)
     if (nom is not '') and (prenom is not ''):
-        nom = nom.upper()
-        #prenom = prenom.capitalize()
-        match_np = re.compile(nom+', '+prenom)
+        match_np = re.compile(nom.upper()+', '+prenom.upper())
     else: match_np = re.compile('.*')
 
     if module is not '':
@@ -517,7 +515,7 @@ def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
     s += "= Analyse par personnel =\n"
     s += "=========================\n\n"
     if (nom is not '') and (prenom is not ''):
-        test = lambda rx, ry, x, y : match_np.match(rx+', '+ry)
+        test = lambda rx, ry, x, y : match_np.match(rx+', '+ry.upper())
     else: test = lambda rx, ry, x, y : True
     with open(cfg['File Names']['Teachers'], 'r') as csvfile:
         dct = csv.DictReader(csvfile, delimiter='\t')
@@ -551,11 +549,9 @@ def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
 
 def doBM(cfg, nom, prenom, module, groupe, resp, debut, fin, personnel_dpt) :
     s = ''
-
+    print('BM', nom, prenom, module, groupe, debut, fin)
     if (nom is not '') and (prenom is not ''):
-        nom = nom.upper()
-        #prenom = prenom.capitalize()
-        match_np = re.compile(nom+', '+prenom)
+        match_np = re.compile(nom.upper()+', '+prenom.upper())
     else: match_np = re.compile('.*')
 
     if module is not '':
@@ -592,7 +588,7 @@ def doBM(cfg, nom, prenom, module, groupe, resp, debut, fin, personnel_dpt) :
                 if lc is not None:
                     if (nom is not '') and (prenom is not ''):
                         for p in lp :
-                            if match_np.match(p) is not None : 
+                            if match_np.match(p.upper()) is not None : 
                                 if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
                                 else: statut = p 
                                 if groupe is not '' : 
@@ -615,11 +611,9 @@ def doBM(cfg, nom, prenom, module, groupe, resp, debut, fin, personnel_dpt) :
 
 def doBG(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
     s = ''
-
+    print('BG', nom, prenom, module, groupe, debut, fin)
     if (nom is not '') and (prenom is not ''):
-        nom = nom.upper()
-        #prenom = prenom.capitalize()
-        match_np = re.compile(nom+', '+prenom)
+        match_np = re.compile(nom.upper()+', '+prenom.upper())
     else: match_np = re.compile('.*')
 
     if module is not '':
@@ -646,7 +640,7 @@ def doBG(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
                 if lc is not None:
                     if (nom is not '') and (prenom is not ''):
                         for p in lp :
-                            if match_np.match(p) is not None : 
+                            if match_np.match(p.upper()) is not None : 
                                 if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
                                 else: statut = p
                                 if module is not '' :
