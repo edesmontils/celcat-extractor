@@ -572,7 +572,10 @@ def doBM(cfg, nom, prenom, module, groupe, resp, debut, fin, personnel_dpt) :
                 s += "==> Recherche pour : "+row['Nom']+"\n"
                 s += "Code : "+row['Code']+"\n"
                 (lc, lp, lm, lg) = load(cfg, row['id'], debut, fin)
-                for p in lp : s += analyse([c for c in lc if p in c.personnel ], p)
+                for p in lp : 
+                    if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
+                    else: statut = p 
+                    s += analyse([c for c in lc if p in c.personnel ], statut)
                 s += "==================================================\n\n\n"
             elif not(resp) and test(row['Code'], module) : 
                 s += "==================================================\n"
