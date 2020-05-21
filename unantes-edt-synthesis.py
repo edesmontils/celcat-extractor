@@ -496,9 +496,7 @@ def getModulesInfo(cfg, nom, prenom, debut, fin, match_np, type_list):
                     lcf += [c.code_matiere for c in lc if (c.type in type_list)]
     return list(set(lcf))
 
-def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
-    s = ''
-    print('BP', nom, prenom, module, groupe, debut, fin)
+def doMatches(nom, prenom, module, groupe) :
     if (nom is not '') and (prenom is not ''):
         match_np = re.compile(nom.upper()+', '+prenom.upper())
     else: match_np = re.compile('.*')
@@ -509,7 +507,13 @@ def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
 
     if groupe is not '':
         match_g = re.compile(groupe)
-    else: match_g = re.compile('.*')    
+    else: match_g = re.compile('.*')     
+    return match_np, match_m, match_g
+
+def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
+    s = ''
+    print('BP', nom, prenom, module, groupe, debut, fin)
+    (match_np, match_m, match_g) = doMatches(nom, prenom, module, groupe)
 
     s += "=========================\n"
     s += "= Analyse par personnel =\n"
@@ -550,17 +554,7 @@ def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
 def doBM(cfg, nom, prenom, module, groupe, resp, debut, fin, personnel_dpt) :
     s = ''
     print('BM', nom, prenom, module, groupe, debut, fin)
-    if (nom is not '') and (prenom is not ''):
-        match_np = re.compile(nom.upper()+', '+prenom.upper())
-    else: match_np = re.compile('.*')
-
-    if module is not '':
-        match_m = re.compile(module)
-    else: match_m = re.compile('.*')
-
-    if groupe is not '':
-        match_g = re.compile(groupe)
-    else: match_g = re.compile('.*')      
+    (match_np, match_m, match_g) = doMatches(nom, prenom, module, groupe)      
 
     s += "======================\n"
     s += "= Analyse par module =\n"
@@ -612,17 +606,7 @@ def doBM(cfg, nom, prenom, module, groupe, resp, debut, fin, personnel_dpt) :
 def doBG(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
     s = ''
     print('BG', nom, prenom, module, groupe, debut, fin)
-    if (nom is not '') and (prenom is not ''):
-        match_np = re.compile(nom.upper()+', '+prenom.upper())
-    else: match_np = re.compile('.*')
-
-    if module is not '':
-        match_m = re.compile(module)
-    else: match_m = re.compile('.*')
-
-    if groupe is not '':
-        match_g = re.compile(groupe)
-    else: match_g = re.compile('.*')      
+    (match_np, match_m, match_g) = doMatches(nom, prenom, module, groupe)      
 
     s += "======================\n"
     s += "= Analyse par groupe =\n"
