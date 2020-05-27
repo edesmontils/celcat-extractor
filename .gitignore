@@ -1,3 +1,5 @@
 
 *.ics
 *.csv
+log
+*.log
