@@ -188,9 +188,21 @@ def bp(nom, prenom):
     d = "<pre>\n"+s+"</pre>"
     return d 
 
+@app.route('/bpt/<nom>/<prenom>/<deb>/<fin>')
+def bpt(nom, prenom, deb, fin):
+    s = doBP(ctx.cfg, nom, prenom, '', '', deb, fin, ctx.personnel_dpt)
+    d = "<pre>\n"+s+"</pre>"
+    return d 
+
 @app.route('/bm/<course>')
 def bm(course):
     s = doBM(ctx.cfg, '', '', course, '', False, '', '', ctx.personnel_dpt)
+    d = "<pre>\n"+s+"</pre>"
+    return d 
+
+@app.route('/bmt/<course>/<deb>/<fin>')
+def bmt(course, deb, fin):
+    s = doBM(ctx.cfg, '', '', course, '', False, deb, fin, ctx.personnel_dpt)
     d = "<pre>\n"+s+"</pre>"
     return d 
 
@@ -200,9 +212,21 @@ def bmr(nom, prenom):
     d = "<pre>\n"+s+"</pre>"
     return d 
 
+@app.route('/bmrt/<nom>/<prenom>/<deb>/<fin>')
+def bmrt(nom, prenom,deb,fin):
+    s = doBM(ctx.cfg, nom, prenom, '', '', True, deb, fin, ctx.personnel_dpt)
+    d = "<pre>\n"+s+"</pre>"
+    return d 
+
 @app.route('/bg/<groupe>')
 def bg(groupe):
     s = doBG(ctx.cfg, '', '', '', groupe, '', '', ctx.personnel_dpt)
+    d = "<pre>\n"+s+"</pre>"
+    return d 
+
+@app.route('/bgt/<groupe>/<deb>/<fin>')
+def bgt(groupe, deb, fin):
+    s = doBG(ctx.cfg, '', '', '', groupe, deb, fin, ctx.personnel_dpt)
     d = "<pre>\n"+s+"</pre>"
     return d 
 
