@@ -7,6 +7,7 @@ import re
 import sys
 from typing import Optional, Iterator, List, Any, Dict
 import datetime
+from datetime import date
 
 import csv
 import os.path
@@ -36,8 +37,18 @@ cal = Calendar(i)
 
 def existFile(f):
     return os.path.isfile(f)
+
 def existDir(d):
     return os.path.exists(d)
+
+def modifDate(f):
+    return date.fromtimestamp(os.stat(f).st_mtime)
+
+def daysOld(f) :
+    n = date.today()
+    d = modifDate(f)
+    delta = n-d
+    return delta.days
 
 #==================================================
 #============ Web =================================
@@ -426,8 +437,8 @@ def load(cfg, ics, debut, fin):
     fileName = cfg['Dir Names']['Cache_dir']+ics+".ics"
     url = cfg['Web']['Celcat_url']+ics+".ics"
 
-    if existFile(fileName):
-        print("Read saved ics")
+    if existFile(fileName) and daysOld(fileName) < int(cfg['Autre']['duree']) :
+        print("Read saved ics ",daysOld(fileName))
         file = open(fileName,"r")
         text = file.read()
         file.close()
@@ -436,7 +447,9 @@ def load(cfg, ics, debut, fin):
         else:
             print('saved but empty ics')
     else: 
-        print("Read UN ics")
+        print("Read UN ics ",daysOld(fileName))
+        if not existFile(fileName) : print("Cached file does'nt exist")
+        elif daysOld(fileName) >= int(cfg['Autre']['duree']) : print("Cached file too old")
         req = requests.get(url)
         if req.status_code == 200:
             ok = True
