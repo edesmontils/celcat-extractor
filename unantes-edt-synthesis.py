@@ -493,7 +493,7 @@ def load(cfg, ics, debut, fin):
                 if ev.groupe is not None :
                     lg += [g for g in ev.groupe if g not in lg ]
 
-        return lc, lp, lm, lg
+        return lc, sorted(lp), sorted(lm), sorted(lg)
     else:
         print(url + " introuvable !")
         return None, None, None, None
