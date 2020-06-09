@@ -48,7 +48,7 @@ def daysOld(f) :
     n = date.today()
     d = modifDate(f)
     delta = n-d
-    return delta.seconds
+    return delta.days
 
 #==================================================
 #============ Web =================================
@@ -437,8 +437,8 @@ def load(cfg, ics, debut, fin):
     fileName = cfg['Dir Names']['Cache_dir']+ics+".ics"
     url = cfg['Web']['Celcat_url']+ics+".ics"
 
-    if existFile(fileName) and daysOld(fileName) < 15 :
-        print("Read saved ics")
+    if existFile(fileName) and daysOld(fileName) < int(cfg['Autre']['duree']) :
+        print("Read saved ics ",daysOld(fileName))
         file = open(fileName,"r")
         text = file.read()
         file.close()
@@ -447,9 +447,9 @@ def load(cfg, ics, debut, fin):
         else:
             print('saved but empty ics')
     else: 
-        print("Read UN ics")
+        print("Read UN ics ",daysOld(fileName))
         if not existFile(fileName) : print("Cached file does'nt exist")
-        elif daysOld(fileName) >= 15 : print("Cached file too old")
+        elif daysOld(fileName) >= int(cfg['Autre']['duree']) : print("Cached file too old")
         req = requests.get(url)
         if req.status_code == 200:
             ok = True
