@@ -41,6 +41,10 @@ def existFile(f):
 def existDir(d):
     return os.path.exists(d)
 
+
+#== changer date d'un fichier
+# touch -t 2006010000 tmp/s88581.ics
+#==
 def modifDate(f):
     return date.fromtimestamp(os.stat(f).st_mtime)
 
