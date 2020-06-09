@@ -183,7 +183,7 @@ def envoyer():
         tab = '<pre>\n' + doBM(ctx.cfg, request.form['nom'], request.form['prenom'], 
                         request.form['course'], request.form['groupe'], 
                         request.form['resp']=='true', request.form['debut'], 
-                        request.form['fin'], ctx.personnel_dpt) + '</pre>'
+                        request.form['fin'], ctx.personnel_dpt, ctx.tab_module) + '</pre>'
         s = 'ok'
         #print(tab)
     elif request.form['type']=='bg': 
@@ -212,25 +212,25 @@ def bpt(nom, prenom, deb, fin):
 
 @app.route('/bm/<course>')
 def bm(course):
-    s = doBM(ctx.cfg, '', '', course, '', False, '', '', ctx.personnel_dpt)
+    s = doBM(ctx.cfg, '', '', course, '', False, '', '', ctx.personnel_dpt, ctx.tab_module)
     d = "<pre>\n"+s+"</pre>"
     return d 
 
 @app.route('/bmt/<course>/<deb>/<fin>')
 def bmt(course, deb, fin):
-    s = doBM(ctx.cfg, '', '', course, '', False, deb, fin, ctx.personnel_dpt)
+    s = doBM(ctx.cfg, '', '', course, '', False, deb, fin, ctx.personnel_dpt, ctx.tab_module)
     d = "<pre>\n"+s+"</pre>"
     return d 
 
 @app.route('/bmr/<nom>/<prenom>')
 def bmr(nom, prenom):
-    s = doBM(ctx.cfg, nom, prenom, '', '', True, '', '', ctx.personnel_dpt)
+    s = doBM(ctx.cfg, nom, prenom, '', '', True, '', '', ctx.personnel_dpt, ctx.tab_module)
     d = "<pre>\n"+s+"</pre>"
     return d 
 
 @app.route('/bmrt/<nom>/<prenom>/<deb>/<fin>')
 def bmrt(nom, prenom,deb,fin):
-    s = doBM(ctx.cfg, nom, prenom, '', '', True, deb, fin, ctx.personnel_dpt)
+    s = doBM(ctx.cfg, nom, prenom, '', '', True, deb, fin, ctx.personnel_dpt, ctx.tab_module)
     d = "<pre>\n"+s+"</pre>"
     return d 
 
@@ -593,37 +593,43 @@ def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt, tab_module
     if (nom is not '') and (prenom is not ''):
         test = lambda rx, ry, x, y : match_np.match(rx+', '+ry.upper())
     else: test = lambda rx, ry, x, y : True
-    with open(cfg['File Names']['Teachers'], 'r') as csvfile:
-        dct = csv.DictReader(csvfile, delimiter='\t')
-        for row in dct:
-            if test(row['Nom'], row['Prénom'], nom, prenom):
-                nomp = row['Nom']+', '+row['Prénom']
-                if nomp in personnel_dpt.keys(): statut =  nomp+' ('+personnel_dpt[nomp][2]+')'
-                else: statut = nomp 
-                s += "==================================================\n"
-                s += "==> Recherche pour : "+statut+"\n"
-                (lc, lp, lm, lg) = load(cfg, row['id'], debut, fin)
-                if lc is not None:
-                    if module is not '' :
-                        for m in lm :
-                            if match_m.match(m) is not None : 
-                                if groupe is not '' :
-                                    for g in lg :
-                                        if match_g.match(g) is not None :
-                                            s += analyse([c for c in lc if (m == c.code_matiere) and (g in c.groupe) ], m+'|'+g)
-                                else: s += analyse([c for c in lc if m == c.code_matiere], m)                            
-                    elif  groupe is not '' :
-                        for g in lg :
-                            if match_g.match(g) is not None :  
-                                s += analyse([c for c in lc if g in c.groupe], g)
-                    else: 
-                        for m in lm :
-                            s += analyse([c for c in lc if m == c.code_matiere], m)
-                s += "==================================================\n\n"
-        s += "\n"
+    # with open(cfg['File Names']['Teachers'], 'r') as csvfile:
+    #     dct = csv.DictReader(csvfile, delimiter='\t')
+    #     for row in dct:
+    
+    for nomp, (pnom, pprenom, pstt, pcode ) in personnel_dpt.items() :
+        if test(pnom, pprenom, nom, prenom):
+            #nomp = row['Nom']+', '+row['Prénom']
+            if nomp in personnel_dpt.keys(): statut =  nomp+' ('+pstt+')'
+            else: statut = nomp 
+            s += "==================================================\n"
+            s += "==> Recherche pour : "+statut+"\n"
+            (lc, lp, lm, lg) = load(cfg, pcode, debut, fin)
+            if lc is not None:
+                if module is not '' :
+                    for m in lm :
+                        if match_m.match(m) is not None : 
+                            if m in tab_module : mname= ' ('+tab_module[m][0]+') '
+                            else: mname = ''
+                            if groupe is not '' :
+                                for g in lg :
+                                    if match_g.match(g) is not None :
+                                        s += analyse([c for c in lc if (m == c.code_matiere) and (g in c.groupe) ], m+mname+'|'+g)
+                            else: s += analyse([c for c in lc if m == c.code_matiere], m+mname)                            
+                elif  groupe is not '' :
+                    for g in lg :
+                        if match_g.match(g) is not None :  
+                            s += analyse([c for c in lc if g in c.groupe], g)
+                else: 
+                    for m in lm :
+                        if m in tab_module : mname= ' ('+tab_module[m][0]+') '
+                        else: mname = ''
+                        s += analyse([c for c in lc if m == c.code_matiere], m+mname)
+            s += "==================================================\n\n"
+    s += "\n"
     return s
 
-def doBM(cfg, nom, prenom, module, groupe, resp, debut, fin, personnel_dpt) :
+def doBM(cfg, nom, prenom, module, groupe, resp, debut, fin, personnel_dpt, tab_module) :
     s = ''
     print('BM', nom, prenom, module, groupe, debut, fin)
     (match_np, match_m, match_g) = doMatches(nom, prenom, module, groupe)      
@@ -636,46 +642,47 @@ def doBM(cfg, nom, prenom, module, groupe, resp, debut, fin, personnel_dpt) :
     else: test = lambda rx, x : True
     if resp and (nom is not '') and (prenom is not ''): lcf = getModulesInfo(cfg, nom, prenom, debut, fin, match_np, ['CM info'])
     else: lcf = []
-    with open(cfg['File Names']['Courses'], 'r') as csvfile:
-        dct = csv.DictReader(csvfile, delimiter='\t')
-        for row in dct:
-            if resp and (nom is not '') and (prenom is not '') and (row['Code'] in lcf):
-                s += "=================== "+ nom+ ", "+prenom +"  ===============================\n"
-                s += "==> Recherche pour : "+row['Nom']+"\n"
-                s += "Code : "+row['Code']+"\n"
-                (lc, lp, lm, lg) = load(cfg, row['id'], debut, fin)
-                for p in lp : 
-                    if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
-                    else: statut = p 
-                    s += analyse([c for c in lc if p in c.personnel ], statut)
-                s += "==================================================\n\n\n"
-            elif not(resp) and (test(row['Code'], module) or test(row['Nom'], module)) : 
-                s += "==================================================\n"
-                s += "==> Recherche pour : "+row['Nom']+"\n"
-                s += "Code : "+row['Code']+"\n"
-                (lc, lp, lm, lg) = load(cfg, row['id'], debut, fin)
-                if lc is not None:
-                    if (nom is not '') and (prenom is not ''):
-                        for p in lp :
-                            if match_np.match(p.upper()) is not None : 
-                                if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
-                                else: statut = p 
-                                if groupe is not '' : 
-                                    for g in lg :
-                                        if match_g.match(g) is not None :
-                                            s += analyse([c for c in lc if (p in c.personnel) and (g in c.groupe) ], statut+'|'+g)
-                                else: s += analyse([c for c in lc if p in c.personnel ], statut)
-                    elif  groupe is not '' :
-                        for g in lg :
-                            if match_g.match(g) is not None : 
-                                s += analyse([c for c in lc if g in c.groupe], g)
-                    else: 
-                        for p in lp :
+    # with open(cfg['File Names']['Courses'], 'r') as csvfile:
+    #     dct = csv.DictReader(csvfile, delimiter='\t')
+    #     for row in dct:
+    for code, (course, cid) in tab_module.items() : # module[row['Code']] = [row['Nom'],row['id']] 
+        if resp and (nom is not '') and (prenom is not '') and (code in lcf):
+            s += "=================== "+ nom+ ", "+prenom +"  ===============================\n"
+            s += "==> Recherche pour : "+course+"\n"
+            s += "Code : "+code+"\n"
+            (lc, lp, lm, lg) = load(cfg, cid, debut, fin)
+            for p in lp : 
+                if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
+                else: statut = p 
+                s += analyse([c for c in lc if p in c.personnel ], statut)
+            s += "==================================================\n\n\n"
+        elif not(resp) and (test(code, module) or test(course, module)) : 
+            s += "==================================================\n"
+            s += "==> Recherche pour : "+course+"\n"
+            s += "Code : "+code+"\n"
+            (lc, lp, lm, lg) = load(cfg, cid, debut, fin)
+            if lc is not None:
+                if (nom is not '') and (prenom is not ''):
+                    for p in lp :
+                        if match_np.match(p.upper()) is not None : 
                             if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
-                            else: statut = p
-                            s += analyse([c for c in lc if p in c.personnel ], statut)
-                s += "==================================================\n\n\n"
-        s += "\n"
+                            else: statut = p 
+                            if groupe is not '' : 
+                                for g in lg :
+                                    if match_g.match(g) is not None :
+                                        s += analyse([c for c in lc if (p in c.personnel) and (g in c.groupe) ], statut+'|'+g)
+                            else: s += analyse([c for c in lc if p in c.personnel ], statut)
+                elif  groupe is not '' :
+                    for g in lg :
+                        if match_g.match(g) is not None : 
+                            s += analyse([c for c in lc if g in c.groupe], g)
+                else: 
+                    for p in lp :
+                        if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
+                        else: statut = p
+                        s += analyse([c for c in lc if p in c.personnel ], statut)
+            s += "==================================================\n\n\n"
+    s += "\n"
     return s
 
 def doBG(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt, tab_module) :
@@ -704,13 +711,17 @@ def doBG(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt, tab_module
                                 else: statut = p
                                 if module is not '' :
                                     for m in lm :
+                                        if m in tab_module : mname= ' ('+tab_module[m][0]+') '
+                                        else: mname = ''
                                         if match_m.match(m) is not None :
-                                            s += analyse([c for c in lc if (m == c.code_matiere) and (p in c.personnel) ], statut+'|'+m)
+                                            s += analyse([c for c in lc if (m == c.code_matiere) and (p in c.personnel) ], statut+'|'+m+mname)
                                 else: s += analyse([c for c in lc if p in c.personnel ], statut)
                     elif  module is not '' :
                         for m in lm :
+                            if m in tab_module : mname= ' ('+tab_module[m][0]+') '
+                            else: mname = ''
                             if match_m.match(m) is not None :  
-                                s += analyse([c for c in lc if m == c.code_matiere], m)
+                                s += analyse([c for c in lc if m == c.code_matiere], m+mname)
                     else: 
                         for p in lp :
                             if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
@@ -791,7 +802,7 @@ if __name__ == "__main__":
             print(doBP(cfg, args.nom, args.prenom, args.module, args.groupe, args.debut, args.fin, personnel_dpt, tab_module))
 
         if args.bm:
-            print(doBM(cfg, args.nom, args.prenom, args.module, args.groupe, args.resp, args.debut, args.fin, personnel_dpt))
+            print(doBM(cfg, args.nom, args.prenom, args.module, args.groupe, args.resp, args.debut, args.fin, personnel_dpt, tab_module))
 
         if args.bg: 
             print(doBG(cfg, args.nom, args.prenom, args.module, args.groupe, args.debut, args.fin, personnel_dpt, tab_module))
