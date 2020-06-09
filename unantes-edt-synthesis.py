@@ -609,18 +609,22 @@ def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt, tab_module
                 if module is not '' :
                     for m in lm :
                         if match_m.match(m) is not None : 
+                            if m in tab_module : mname= ' ('+tab_module[m][0]+') '
+                            else: mname = ''
                             if groupe is not '' :
                                 for g in lg :
                                     if match_g.match(g) is not None :
-                                        s += analyse([c for c in lc if (m == c.code_matiere) and (g in c.groupe) ], m+' ('+tab_module[m][0]+') '+'|'+g)
-                            else: s += analyse([c for c in lc if m == c.code_matiere], m+' ('+tab_module[m][0]+')')                            
+                                        s += analyse([c for c in lc if (m == c.code_matiere) and (g in c.groupe) ], m+mname+'|'+g)
+                            else: s += analyse([c for c in lc if m == c.code_matiere], m+mname)                            
                 elif  groupe is not '' :
                     for g in lg :
                         if match_g.match(g) is not None :  
                             s += analyse([c for c in lc if g in c.groupe], g)
                 else: 
                     for m in lm :
-                        s += analyse([c for c in lc if m == c.code_matiere], m+' ('+tab_module[m][0]+')')
+                        if m in tab_module : mname= ' ('+tab_module[m][0]+') '
+                        else: mname = ''
+                        s += analyse([c for c in lc if m == c.code_matiere], m+mname)
             s += "==================================================\n\n"
     s += "\n"
     return s
@@ -707,13 +711,17 @@ def doBG(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt, tab_module
                                 else: statut = p
                                 if module is not '' :
                                     for m in lm :
+                                        if m in tab_module : mname= ' ('+tab_module[m][0]+') '
+                                        else: mname = ''
                                         if match_m.match(m) is not None :
-                                            s += analyse([c for c in lc if (m == c.code_matiere) and (p in c.personnel) ], statut+'|'+m+' ('+tab_module[m][0]+')')
+                                            s += analyse([c for c in lc if (m == c.code_matiere) and (p in c.personnel) ], statut+'|'+m+mname)
                                 else: s += analyse([c for c in lc if p in c.personnel ], statut)
                     elif  module is not '' :
                         for m in lm :
+                            if m in tab_module : mname= ' ('+tab_module[m][0]+') '
+                            else: mname = ''
                             if match_m.match(m) is not None :  
-                                s += analyse([c for c in lc if m == c.code_matiere], m+' ('+tab_module[m][0]+')')
+                                s += analyse([c for c in lc if m == c.code_matiere], m+mname)
                     else: 
                         for p in lp :
                             if p in personnel_dpt.keys(): statut =  p+' ('+personnel_dpt[p][2]+')'
