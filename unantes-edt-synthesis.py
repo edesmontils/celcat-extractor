@@ -69,7 +69,8 @@ class Context(object):
         self.debug = False
         self.version = '1.0'
         self.name = 'Name'
-        self.personnel_dpt = []
+        self.personnel_dpt = {}
+        self.tab_module = {}
         self.cfg = None
 
     def start(self):
@@ -174,7 +175,7 @@ def envoyer():
         print('BP received')
         tab = '<pre>\n' + doBP(ctx.cfg, request.form['nom'], request.form['prenom'], 
                         request.form['course'], request.form['groupe'], request.form['debut'], 
-                        request.form['fin'], ctx.personnel_dpt) + '</pre>'
+                        request.form['fin'], ctx.personnel_dpt, ctx.tab_module) + '</pre>'
         s = 'ok'
         #print(tab)
     elif request.form['type']=='bm': 
@@ -190,7 +191,7 @@ def envoyer():
         tab = '<pre>\n' + doBG(ctx.cfg, request.form['nom'], request.form['prenom'], 
                         request.form['course'], request.form['groupe'], 
                         request.form['debut'], 
-                        request.form['fin'], ctx.personnel_dpt) + '</pre>'
+                        request.form['fin'], ctx.personnel_dpt, ctx.tab_module) + '</pre>'
         s = 'ok'
         #print(tab)
     else: print('Type inconnu')
@@ -199,13 +200,13 @@ def envoyer():
 
 @app.route('/bp/<nom>/<prenom>')
 def bp(nom, prenom):
-    s = doBP(ctx.cfg, nom, prenom, '', '', '', '', ctx.personnel_dpt)
+    s = doBP(ctx.cfg, nom, prenom, '', '', '', '', ctx.personnel_dpt, ctx.tab_module)
     d = "<pre>\n"+s+"</pre>"
     return d 
 
 @app.route('/bpt/<nom>/<prenom>/<deb>/<fin>')
 def bpt(nom, prenom, deb, fin):
-    s = doBP(ctx.cfg, nom, prenom, '', '', deb, fin, ctx.personnel_dpt)
+    s = doBP(ctx.cfg, nom, prenom, '', '', deb, fin, ctx.personnel_dpt, ctx.tab_module)
     d = "<pre>\n"+s+"</pre>"
     return d 
 
@@ -235,13 +236,13 @@ def bmrt(nom, prenom,deb,fin):
 
 @app.route('/bg/<groupe>')
 def bg(groupe):
-    s = doBG(ctx.cfg, '', '', '', groupe, '', '', ctx.personnel_dpt)
+    s = doBG(ctx.cfg, '', '', '', groupe, '', '', ctx.personnel_dpt, ctx.tab_module)
     d = "<pre>\n"+s+"</pre>"
     return d 
 
 @app.route('/bgt/<groupe>/<deb>/<fin>')
 def bgt(groupe, deb, fin):
-    s = doBG(ctx.cfg, '', '', '', groupe, deb, fin, ctx.personnel_dpt)
+    s = doBG(ctx.cfg, '', '', '', groupe, deb, fin, ctx.personnel_dpt, ctx.tab_module)
     d = "<pre>\n"+s+"</pre>"
     return d 
 
@@ -276,9 +277,10 @@ def getPerso(cfg):
                 for row in dct:
                     nom = ''.join((c for c in unicodedata.normalize('NFD', row['NOM'].strip()) if unicodedata.category(c) != 'Mn'))
                     prenom = ''.join((c for c in unicodedata.normalize('NFD', row['PRENOM'].strip()) if unicodedata.category(c) != 'Mn'))
-                    personnel_dpt[nom+', '+prenom] = [nom, prenom, row['STATUT'].strip()]
+                    personnel_dpt[nom+', '+prenom] = [nom, prenom, row['STATUT'].strip(),row['EDT']]
 
         # Get page with all names and urls
+        # https://edt.univ-nantes.fr/chantrerie-gavy/sindex.html
         url: str = cfg['Web']['Celcat_url']+"sindex.html"
         req = requests.get(url)
         if req.status_code == 200:
@@ -303,9 +305,18 @@ def getPerso(cfg):
                                 stt = p[2].upper()
                             else: 
                                 stt = 'AUTRE'
-                            s = {'id': c[0], 'Nom': nom, 'Prénom':prenom, 'Statut':stt}
-                            personnel[nomc] = [ nom, prenom, stt]
+                            urlservice = c[0] # cfg['Web']['Celcat_url']+c[0]+".ics"
+                            s = {'id': urlservice, 'Nom': nom, 'Prénom':prenom, 'Statut':stt}
+                            personnel[nomc] = [ nom, prenom, stt, urlservice]
                             writer.writerow(s)
+                        # Ajout d'autres étudiants (Polytech par exemple)
+                        # todo
+                        for p in personnel_dpt.keys() :
+                            if p not in personnel : 
+                                desc = personnel_dpt[p]
+                                s = {'id': desc[3], 'Nom': desc[0], 'Prénom':desc[1], 'Statut':desc[2]}
+                                personnel[p] = [ desc[0], desc[1], desc[2], desc[3]]
+                                writer.writerow(s)
                     print('saved')
                 except KeyboardInterrupt:
                     print('Interupted') 
@@ -317,10 +328,11 @@ def getPerso(cfg):
             for row in dct:
                 nom = row['Nom']
                 prenom = row['Prénom']
-                personnel[nom+', '+prenom] = [nom, prenom, row['Statut']]        
+                personnel[nom+', '+prenom] = [nom, prenom, row['Statut'],row['id']]        
     return personnel
 
 def getModule(cfg):
+    module = {}
     if not existFile(cfg['File Names']['Courses']) :
         # Get page with all names and urls
         url: str =  cfg['Web']['Celcat_url']+"mindex.html" #'https://edt.univ-nantes.fr/sciences/d359754mindex.html' #
@@ -344,11 +356,18 @@ def getModule(cfg):
                         for c in fda:
                             s = {'id': c[0], 'Nom': c[1], 'Code':c[2]}
                             writer.writerow(s)
+                            module[c[2]] = [c[1],c[0]]
                     print('saved')
                 except KeyboardInterrupt:
                     print('Interupted') 
         else:
             print("Impossible de récupérer le référentiel des modules")
+    else:
+        with open(cfg['File Names']['Courses'], 'r', encoding='utf-8') as csvfile:
+            dct = csv.DictReader(csvfile, delimiter='\t')
+            for row in dct:
+                module[row['Code']] = [row['Nom'],row['id']]        
+    return module
 
 def getGroupe(cfg):
     if not existFile(cfg['File Names']['Groups']) :
@@ -456,15 +475,27 @@ def load(cfg, ics, debut, fin):
         elif daysOld(fileName) >= int(cfg['Autre']['duree']) : print("Cached file too old : ",daysOld(fileName))
         req = requests.get(url)
         if req.status_code == 200:
+            print('FST')
             ok = True
             file = open(fileName,"w")
             file.write(req.text)
             file.close()
             text = req.text
         else:
-            file = open(fileName,"w")
-            file.write('')
-            file.close()            
+            url = "https://edt.univ-nantes.fr/chantrerie-gavy/"+ics+".ics"
+            req = requests.get(url)
+            if req.status_code == 200:
+                print('PLT')
+                ok = True
+                file = open(fileName,"w")
+                file.write(req.text)
+                file.close()
+                text = req.text            
+            else:
+                print('Not founded')
+                file = open(fileName,"w")
+                file.write('')
+                file.close()            
     if ok:
         print("Analyse de : <"+url+">")
         ics_content: str = text
@@ -551,7 +582,7 @@ def doMatches(nom, prenom, module, groupe) :
     else: match_g = re.compile('.*')     
     return match_np, match_m, match_g
 
-def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
+def doBP(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt, tab_module) :
     s = ''
     print('BP', nom, prenom, module, groupe, debut, fin)
     (match_np, match_m, match_g) = doMatches(nom, prenom, module, groupe)
@@ -647,7 +678,7 @@ def doBM(cfg, nom, prenom, module, groupe, resp, debut, fin, personnel_dpt) :
         s += "\n"
     return s
 
-def doBG(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt) :
+def doBG(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt, tab_module) :
     s = ''
     print('BG', nom, prenom, module, groupe, debut, fin)
     (match_np, match_m, match_g) = doMatches(nom, prenom, module, groupe)      
@@ -727,7 +758,7 @@ if __name__ == "__main__":
     print("Reconstruction des CSV")
 
     personnel_dpt = getPerso(cfg)
-    getModule(cfg)
+    tab_module = getModule(cfg)
     getGroupe(cfg)
 
     if not existDir(cfg['Dir Names']['Cache_dir']):
@@ -738,6 +769,7 @@ if __name__ == "__main__":
         loadWebConfig('./web-config.xml')
         try:
             ctx.personnel_dpt = personnel_dpt
+            ctx.tab_module = tab_module
             ctx.cfg = cfg
             ctx.debug = cfg['Autre']['debug']=='True'
             ctx.host = cfg['Web']['host']
@@ -756,12 +788,12 @@ if __name__ == "__main__":
     else:
         #=== Lancement des traitements
         if args.bp:
-            print(doBP(cfg, args.nom, args.prenom, args.module, args.groupe, args.debut, args.fin, personnel_dpt))
+            print(doBP(cfg, args.nom, args.prenom, args.module, args.groupe, args.debut, args.fin, personnel_dpt, tab_module))
 
         if args.bm:
             print(doBM(cfg, args.nom, args.prenom, args.module, args.groupe, args.resp, args.debut, args.fin, personnel_dpt))
 
         if args.bg: 
-            print(doBG(cfg, args.nom, args.prenom, args.module, args.groupe, args.debut, args.fin, personnel_dpt))
+            print(doBG(cfg, args.nom, args.prenom, args.module, args.groupe, args.debut, args.fin, personnel_dpt, tab_module))
 
         print("Fin")
