@@ -451,9 +451,9 @@ def load(cfg, ics, debut, fin):
         else:
             print('saved but empty ics')
     else: 
-        print("Read UN ics ",daysOld(fileName))
+        print("Read UN ics ")
         if not existFile(fileName) : print("Cached file does'nt exist")
-        elif daysOld(fileName) >= int(cfg['Autre']['duree']) : print("Cached file too old")
+        elif daysOld(fileName) >= int(cfg['Autre']['duree']) : print("Cached file too old : ",daysOld(fileName))
         req = requests.get(url)
         if req.status_code == 200:
             ok = True
@@ -618,7 +618,7 @@ def doBM(cfg, nom, prenom, module, groupe, resp, debut, fin, personnel_dpt) :
                     else: statut = p 
                     s += analyse([c for c in lc if p in c.personnel ], statut)
                 s += "==================================================\n\n\n"
-            elif not(resp) and test(row['Code'], module) : 
+            elif not(resp) and (test(row['Code'], module) or test(row['Nom'], module)) : 
                 s += "==================================================\n"
                 s += "==> Recherche pour : "+row['Nom']+"\n"
                 s += "Code : "+row['Code']+"\n"
