@@ -8,7 +8,7 @@ Il est basé sur l'outil https://gitlab.univ-nantes.fr/bousse-e/edt-extractor
 == Prérequis
 
 ```
-$ pip3 install --user ics requests argparse
+$ pip3 install --user ics requests argparse lxml flask
 ```
 
 Documentation :
