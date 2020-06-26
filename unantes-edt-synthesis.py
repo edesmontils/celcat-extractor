@@ -551,7 +551,9 @@ def analyse(lev, code):
         course_type_total_hours = format_string.format(course_type_total.total_seconds() / 3600)
 
         # Output
-        s = s + f'− {ct} : {str(course_type_total)} ({str(course_type_total_hours)})' + "\n"
+        #s = s + f'− {ct} : {str(course_type_total)} ({str(course_type_total_hours)})' + "\n"
+        s = s + '− '+str(course_type_total)+' ('+str(course_type_total_hours)+')' + "\n"
+
     return s
 
 
