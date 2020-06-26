@@ -498,7 +498,7 @@ def load(cfg, ics, debut, fin):
                 file.close()            
     if ok:
         print("Analyse de : <"+url+">")
-        ics_content: str = text
+        ics_content = text
         cal = Calendar(ics_content)
         lc = []
         lp = []
