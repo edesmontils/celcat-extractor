@@ -281,7 +281,7 @@ def getPerso(cfg):
 
         # Get page with all names and urls
         # https://edt.univ-nantes.fr/chantrerie-gavy/sindex.html
-        url: str = cfg['Web']['Celcat_url']+"sindex.html"
+        url = cfg['Web']['Celcat_url']+"sindex.html"
         req = requests.get(url)
         if req.status_code == 200:
             page_content: str = req.text
