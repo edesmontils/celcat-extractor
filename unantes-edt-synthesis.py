@@ -530,7 +530,8 @@ def load(cfg, ics, debut, fin):
         return None, None, None, None
 
 def analyse(lev, code):
-    sorted_events: Dict[str, List[Creneau]] = {}
+    #sorted_events: Dict[str, List[Creneau]] = {}
+    sorted_events = {}
     for c in lev:
         if c.type is None: evt = "autre"
         else: evt = c.type
