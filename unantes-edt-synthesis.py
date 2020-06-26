@@ -335,10 +335,10 @@ def getModule(cfg):
     module = {}
     if not existFile(cfg['File Names']['Courses']) :
         # Get page with all names and urls
-        url: str =  cfg['Web']['Celcat_url']+"mindex.html" #'https://edt.univ-nantes.fr/sciences/d359754mindex.html' #
+        url =  cfg['Web']['Celcat_url']+"mindex.html" #'https://edt.univ-nantes.fr/sciences/d359754mindex.html' #
         req = requests.get(url)
         if req.status_code == 200:
-            page_content: str = req.text
+            page_content = req.text
 
             # Find id in there
             fda = re.findall(r'<option value="(.*)\.html">(.*), (.*)</option>',
@@ -372,10 +372,10 @@ def getModule(cfg):
 def getGroupe(cfg):
     if not existFile(cfg['File Names']['Groups']) :
         # Get page with all names and urls
-        url: str = cfg['Web']['Celcat_url']+"gindex.html"
+        url = cfg['Web']['Celcat_url']+"gindex.html"
         req = requests.get(url)
         if req.status_code == 200:
-            page_content: str = req.text
+            page_content = req.text
 
             # Find id in there
             fda = re.findall(r'<option value="(.*)\.html">(.*)</option>',
