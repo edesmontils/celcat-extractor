@@ -284,7 +284,7 @@ def getPerso(cfg):
         url = cfg['Web']['Celcat_url']+"sindex.html"
         req = requests.get(url)
         if req.status_code == 200:
-            page_content: str = req.text
+            page_content = req.text
 
             # Find id in there
             fda = re.findall(r'<option value="(.*)\.html">(.*), (.*)</option>', page_content, re.MULTILINE)
