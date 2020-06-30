@@ -64,7 +64,7 @@ class Context(object):
     def __init__(self):
         super(Context, self).__init__()
         self.host = '0.0.0.0'
-        self.port = 5002
+        self.port = 80
         self.tree = None
         self.debug = False
         self.version = '1.0'
@@ -80,19 +80,23 @@ class Context(object):
         pass
 
     def loadWebConfig(self, configFile) :
-        XMLparser = etree.XMLParser(recover=True, strip_cdata=True)
-        self.tree = etree.parse(configFile, XMLparser)
-        #---
-        dtd = etree.DTD('web-config.dtd')
-        assert dtd.validate(self.tree), '%s non valide au chargement : %s' % (
-            configFile, dtd.error_log.filter_from_errors()[0])
-        #---
-        self.version = self.tree.getroot().get('version')
-        self.name = self.tree.getroot().get('name')
-        if self.tree.getroot().get('debug') == 'false':
-            self.debug = False
+        if existFile(configFile) :
+            XMLparser = etree.XMLParser(recover=True, strip_cdata=True)
+            self.tree = etree.parse(configFile, XMLparser)
+            if existFile('web-config.dtd') :
+                #---
+                dtd = etree.DTD('web-config.dtd')
+                assert dtd.validate(self.tree), '%s non valide au chargement : %s' % (
+                    configFile, dtd.error_log.filter_from_errors()[0])
+                #---
+            self.version = self.tree.getroot().get('version')
+            self.name = self.tree.getroot().get('name')
+            if self.tree.getroot().get('debug') == 'false':
+                self.debug = False
+            else:
+                self.debug = True
         else:
-            self.debug = True
+            pass
 
 ctx = Context()
 
