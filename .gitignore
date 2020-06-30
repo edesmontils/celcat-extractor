@@ -4,3 +4,5 @@
 log
 *.log
 *.pyc
+__pycache__/unantes-edt-synthesis.cpython-36.pyc
+gu.pid
