@@ -9,9 +9,9 @@ daemon=True
 
 accesslog='gunicorn_access.log'
 errorlog='gunicorn_error.log'
+
 capture_output=True
 loglevel='debug'
-
 reload=True
 
 enable_stdio_inheritance=True
