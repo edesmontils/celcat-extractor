@@ -25,6 +25,9 @@ cd celcat-extractor
 ```
 
 == Usage
+
+=== En ligne de commande
+
 ```
 usage: unantes-edt-synthesis.py [-h] [-n NOM] [-p PRENOM] [-m MODULE]
                                 [-g GROUPE] [-bm] [-bp] [-bg] [-resp]
@@ -111,3 +114,67 @@ Analyse de : <https://edt.univ-nantes.fr/sciences/s85976.ics>
 
 Fin
 ```
+
+=== En serveur Flask
+
+
+```
+usage: unantes-edt-synthesis.py  -w
+```
+
+Les caractéristiques du serveur Flask se trouvent dans de fichier 'config.cfg'. Il est de la forme :
+```
+[File Names]
+Teachers = personnels.csv
+Courses = modules.csv
+Groups = groupes.csv
+ComputerScience_teachers = xxxx.csv
+
+[Dir Names]
+Cache_dir = ./tmp/
+
+[Web]
+Celcat_url = https://edt.univ-nantes.fr/sciences/
+host=0.0.0.0
+port=32769
+
+[Autre]
+debug=False
+duree=7
+```
+
+=== En serveur Gunicorn
+
+Faire au préalable :
+```
+$ pip3 install --user gunicorn
+```
+
+Les caractristiques du serveur se trouvent dans le fichier de configuration 'gunicorn_cfg.py'. Il est de la forme :
+```
+bind='0.0.0.0:32769'
+
+workers=2
+
+pidfile='gu.pid'
+daemon=True
+
+accesslog='gunicorn_access.log'
+errorlog='gunicorn_error.log'
+
+capture_output=True
+loglevel='debug'
+reload=True
+
+enable_stdio_inheritance=True
+
+proc_name='celcat_ext'
+```
+
+Ensuite, il suffit de lancer le serveur avec la commande :
+```
+$ gunicorn -c gunicorn_cfg.py unantes-edt-synthesis:app
+```
+
+
+
