@@ -3,3 +3,7 @@
 *.csv
 log
 *.log
+*.pyc
+__pycache__/*
+gu.pid
+tmp/*

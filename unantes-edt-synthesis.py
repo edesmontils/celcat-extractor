@@ -64,7 +64,7 @@ class Context(object):
     def __init__(self):
         super(Context, self).__init__()
         self.host = '0.0.0.0'
-        self.port = 5002
+        self.port = 80
         self.tree = None
         self.debug = False
         self.version = '1.0'
@@ -78,6 +78,25 @@ class Context(object):
 
     def stop(self):
         pass
+
+    def loadWebConfig(self, configFile) :
+        if existFile(configFile) :
+            XMLparser = etree.XMLParser(recover=True, strip_cdata=True)
+            self.tree = etree.parse(configFile, XMLparser)
+            if existFile('web-config.dtd') :
+                #---
+                dtd = etree.DTD('web-config.dtd')
+                assert dtd.validate(self.tree), '%s non valide au chargement : %s' % (
+                    configFile, dtd.error_log.filter_from_errors()[0])
+                #---
+            self.version = self.tree.getroot().get('version')
+            self.name = self.tree.getroot().get('name')
+            if self.tree.getroot().get('debug') == 'false':
+                self.debug = False
+            else:
+                self.debug = True
+        else:
+            pass
 
 ctx = Context()
 
@@ -245,21 +264,6 @@ def bgt(groupe, deb, fin):
     s = doBG(ctx.cfg, '', '', '', groupe, deb, fin, ctx.personnel_dpt, ctx.tab_module)
     d = "<pre>\n"+s+"</pre>"
     return d 
-
-def loadWebConfig(configFile) :
-    XMLparser = etree.XMLParser(recover=True, strip_cdata=True)
-    ctx.tree = etree.parse(configFile, XMLparser)
-    #---
-    dtd = etree.DTD('web-config.dtd')
-    assert dtd.validate(ctx.tree), '%s non valide au chargement : %s' % (
-        configFile, dtd.error_log.filter_from_errors()[0])
-    #---
-    ctx.version = ctx.tree.getroot().get('version')
-    ctx.name = ctx.tree.getroot().get('name')
-    if ctx.tree.getroot().get('debug') == 'false':
-        ctx.debug = False
-    else:
-        ctx.debug = True
 
 #==================================================
 #============ Functions ===========================
@@ -735,6 +739,34 @@ def doBG(cfg, nom, prenom, module, groupe, debut, fin, personnel_dpt, tab_module
     return s
 
 #==================================================
+#=== Gestion de la configuratiuon =================
+#==================================================
+
+cfg = ConfigParser() #interpolation=ExtendedInterpolation())
+r = cfg.read('config.cfg')
+if r == []:
+    print('Config file not founded')
+    exit()
+else :
+    #=== Préparation du contexte
+    print("Reconstruction des CSV")
+
+    personnel_dpt = getPerso(cfg)
+    tab_module = getModule(cfg)
+    getGroupe(cfg)
+
+    if not existDir(cfg['Dir Names']['Cache_dir']):
+        os.makedirs(cfg['Dir Names']['Cache_dir'])
+
+    ctx.loadWebConfig('web-config.xml')
+    ctx.personnel_dpt = personnel_dpt
+    ctx.tab_module = tab_module
+    ctx.cfg = cfg
+    ctx.debug = cfg['Autre']['debug']=='True'
+    ctx.host = cfg['Web']['host']
+    ctx.port = cfg['Web']['port']
+
+#==================================================
 #==================================================
 #==================================================
 if __name__ == "__main__":
@@ -759,35 +791,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    #=== Gestion de la configuratiuon
-
-    cfg = ConfigParser() #interpolation=ExtendedInterpolation())
-    r = cfg.read('config.cfg')
-    if r == []:
-        print('Config file not founded')
-        exit()
-
-    #=== Préparation du contexte
-
-    print("Reconstruction des CSV")
-
-    personnel_dpt = getPerso(cfg)
-    tab_module = getModule(cfg)
-    getGroupe(cfg)
-
-    if not existDir(cfg['Dir Names']['Cache_dir']):
-        os.makedirs(cfg['Dir Names']['Cache_dir'])
-
-
     if args.web :
-        loadWebConfig('./web-config.xml')
         try:
-            ctx.personnel_dpt = personnel_dpt
-            ctx.tab_module = tab_module
-            ctx.cfg = cfg
-            ctx.debug = cfg['Autre']['debug']=='True'
-            ctx.host = cfg['Web']['host']
-            ctx.port = cfg['Web']['port']
             print('Running ', ctx.name ,' on <http://'+ctx.host +':'+ ctx.port+'>')
             ctx.start()
             app.run(
