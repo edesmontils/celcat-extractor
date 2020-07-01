@@ -123,7 +123,7 @@ app.secret_key = '\x0ctD\xe3g\xe1XNJ\x86\x02\x03`O\x98\x84\xfd,e/5\x8b\xd1\x11'
 @app.route('/')
 # @login_required
 def index():
-    print(url_for('static',filename='js/prototype.js',_external=True))
+    # print(url_for('static',filename='js/prototype.js',_external=True))
     return render_template(
         'index.html',
         # username = cas.username,
