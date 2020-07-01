@@ -176,5 +176,3 @@ Ensuite, il suffit de lancer le serveur avec la commande :
 $ gunicorn -c gunicorn_cfg.py unantes-edt-synthesis:app
 ```
 
-
-
