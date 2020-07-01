@@ -17,7 +17,7 @@ import pprint as pp
 import argparse
 from configparser import ConfigParser, ExtendedInterpolation
 
-from flask import Flask, render_template, request, jsonify # http://flask.pocoo.org/docs/0.12/
+from flask import Flask, render_template, request, jsonify, url_for # http://flask.pocoo.org/docs/0.12/
 # from flask_cas import CAS, login_required
 from lxml import etree  # http://lxml.de/index.html#documentation
 
@@ -123,6 +123,7 @@ app.secret_key = '\x0ctD\xe3g\xe1XNJ\x86\x02\x03`O\x98\x84\xfd,e/5\x8b\xd1\x11'
 @app.route('/')
 # @login_required
 def index():
+    print(url_for('static',filename='js/prototype.js',_external=True))
     return render_template(
         'index.html',
         # username = cas.username,
