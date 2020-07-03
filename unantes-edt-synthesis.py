@@ -114,7 +114,7 @@ app = Flask(__name__)
 app.secret_key = '\x0ctD\xe3g\xe1XNJ\x86\x02\x03`O\x98\x84\xfd,e/5\x8b\xd1\x11'
 
 # cas = CAS(app)
-# app.config['CAS_SERVER'] = 'https://cas-ha.univ-nantes.fr:443'
+# app.config['CAS_SERVER'] = 'https://cas-ha.univ-nantes.fr'
 # app.config['CAS_PORT'] = 443
 # app.config['CAS_PATH'] = '/esup-cas-server'
 # app.config['CAS_AFTER_LOGIN'] = 'route_root'
