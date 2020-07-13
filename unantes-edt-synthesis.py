@@ -447,7 +447,7 @@ class Creneau :
         else: self.remarque = 'None'
 
         # version edt-standard
-        # m = re.search(r'Matière : (.*?) \((.*)\)\n',icsEvent.description, re.MULTILINE)
+        # m = re.search(r'Matière : (.*) \((.*)\)\n',icsEvent.description, re.MULTILINE)
         # if m is not None : 
         #     self.matiere = m.group(1)
         #     if m.group(2) is not None :
