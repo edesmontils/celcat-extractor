@@ -176,3 +176,4 @@ Ensuite, il suffit de lancer le serveur avec la commande :
 $ gunicorn -c gunicorn_cfg.py unantes-edt-synthesis:app
 ```
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edesmontils/celcat-extractor.git/master)
