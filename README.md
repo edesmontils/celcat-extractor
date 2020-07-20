@@ -29,7 +29,7 @@ cd celcat-extractor
 ### En ligne de commande
 
 ```
-usage: unantes-edt-synthesis.py [-h] [-n NOM] [-p PRENOM] [-m MODULE]
+usage: celcat-extractor.py [-h] [-n NOM] [-p PRENOM] [-m MODULE]
                                 [-g GROUPE] [-bm] [-bp] [-bg] [-resp]
                                 [-d DEBUT] [-f FIN]
 
@@ -119,7 +119,7 @@ Fin
 
 
 ```
-usage: unantes-edt-synthesis.py  -w
+usage: celcat-extractor.py  -w
 ```
 
 Les caractéristiques du serveur Flask se trouvent dans de fichier 'config.cfg'. Il est de la forme :
@@ -173,7 +173,7 @@ proc_name='celcat_ext'
 
 Ensuite, il suffit de lancer le serveur avec la commande :
 ```
-$ gunicorn -c gunicorn_cfg.py unantes-edt-synthesis:app
+$ gunicorn -c gunicorn_cfg.py celcat-extractor:app
 ```
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edesmontils/celcat-extractor.git/master)
