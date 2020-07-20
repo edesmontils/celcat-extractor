@@ -176,4 +176,6 @@ Ensuite, il suffit de lancer le serveur avec la commande :
 $ gunicorn -c gunicorn_cfg.py celcat-extractor:app
 ```
 
+## Tests
+
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/edesmontils/celcat-extractor.git/master)
