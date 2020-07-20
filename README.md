@@ -1,11 +1,11 @@
-= Extracteur d'informations Celcat Université de Nantes
+# Extracteur d'informations Celcat Université de Nantes
 
 Permet de récupérer dans l'EDT en ligne le volume horaire d'un intervenant sur une UE à partir du Celcet de l'Université de Nantes.
 
 Il est basé sur l'outil https://gitlab.univ-nantes.fr/bousse-e/edt-extractor 
 
 
-== Prérequis
+## Prérequis
 
 ```
 $ pip3 install --user ics requests argparse lxml flask
@@ -17,16 +17,16 @@ Documentation :
   
   * https://arrow.readthedocs.io/en/latest/
 
-== Installation 
+## Installation 
 
 ```
 git clone https://github.com/edesmontils/celcat-extractor.git
 cd celcat-extractor
 ```
 
-== Usage
+## Usage
 
-=== En ligne de commande
+### En ligne de commande
 
 ```
 usage: unantes-edt-synthesis.py [-h] [-n NOM] [-p PRENOM] [-m MODULE]
@@ -115,7 +115,7 @@ Analyse de : <https://edt.univ-nantes.fr/sciences/s85976.ics>
 Fin
 ```
 
-=== En serveur Flask
+### En serveur Flask
 
 
 ```
@@ -143,7 +143,7 @@ debug=False
 duree=7
 ```
 
-=== En serveur Gunicorn
+### En serveur Gunicorn
 
 Faire au préalable :
 ```
