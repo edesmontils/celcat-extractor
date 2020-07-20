@@ -29,7 +29,7 @@ cd celcat-extractor
 ### En ligne de commande
 
 ```
-usage: celcat-extractor.py [-h] [-n NOM] [-p PRENOM] [-m MODULE]
+usage: celcat_extractor.py [-h] [-n NOM] [-p PRENOM] [-m MODULE]
                                 [-g GROUPE] [-bm] [-bp] [-bg] [-resp]
                                 [-d DEBUT] [-f FIN]
 
@@ -57,7 +57,7 @@ optional arguments:
 
 Exemple :
 ```
-$ python3 unantes-edt-synthesis.py -bp -resp -n 'Desmontils' -p '.*'    
+$ python3 celcat_extractor.py -bp -resp -n 'Desmontils' -p '.*'    
 Reconstruction des CSV
 Préparation des données
 
