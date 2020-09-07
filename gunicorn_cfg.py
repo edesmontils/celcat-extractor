@@ -1,6 +1,6 @@
 # gunicorn -b '' --reload -p gu.pid -D --access-logfile log.log --error-logfile err.log  -n celcat-ext -R  unantes-edt-synthesis:app
 
-bind='0.0.0.0:32769'
+bind='0.0.0.0:80'
 
 workers=2
 
