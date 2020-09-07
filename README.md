@@ -173,7 +173,7 @@ proc_name='celcat_ext'
 
 Ensuite, il suffit de lancer le serveur avec la commande :
 ```
-$ gunicorn -c gunicorn_cfg.py celcat-extractor:app
+$ gunicorn -c gunicorn_cfg.py celcat_extractor:app
 ```
 
 ## Tests

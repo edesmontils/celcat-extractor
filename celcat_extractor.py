@@ -361,11 +361,11 @@ def getModule(cfg):
                         for c in fda:
 
                             # version edt-standard
-                            s = {'id': c[0], 'Nom': c[1], 'Code':c[2]}
+                            # s = {'id': c[0], 'Nom': c[1], 'Code':c[2]}
                             # --------------------
 
                             # version edt-bis
-                            # s = {'id': c[0], 'Nom': c[2], 'Code':c[1]}
+                            s = {'id': c[0], 'Nom': c[2], 'Code':c[1]}
                             # --------------------
 
                             writer.writerow(s)
@@ -447,29 +447,29 @@ class Creneau :
         else: self.remarque = 'None'
 
         # version edt-standard
-        m = re.search(r'Matière : (.*) \((.*)\)\n',icsEvent.description, re.MULTILINE)
-        if m is not None : 
-            self.matiere = m.group(1)
-            if m.group(2) is not None :
-                self.code_matiere = m.group(2)
-            else:
-                self.code_matiere = "m*"+m.group(1).replace(" ","").replace(":","").replace("-","").replace("(","").replace(")","").replace("'","").upper()#'Sans_code'
-        else:
-            self.matiere = 'Sans_code'    
-            self.code_matiere =  "r*"+self.remarque.replace(" ","").replace(":","").replace("-","").replace("(","").replace(")","").replace("'","")[:10].upper()#'Sans_code'
-        # -------------------------
-
-        # version edt-bis
-        # m = re.search(r'Matière : (.*?) \((.*)\)\n',icsEvent.description, re.MULTILINE)
+        # m = re.search(r'Matière : (.*) \((.*)\)\n',icsEvent.description, re.MULTILINE)
         # if m is not None : 
-        #     self.matiere = m.group(2)
-        #     if m.group(1) is not None :
-        #         self.code_matiere = m.group(1)
+        #     self.matiere = m.group(1)
+        #     if m.group(2) is not None :
+        #         self.code_matiere = m.group(2)
         #     else:
-        #         self.code_matiere = "m*"+m.group(2).replace(" ","").replace(":","").replace("-","").replace("(","").replace(")","").replace("'","").upper()#'Sans_code'
+        #         self.code_matiere = "m*"+m.group(1).replace(" ","").replace(":","").replace("-","").replace("(","").replace(")","").replace("'","").upper()#'Sans_code'
         # else:
         #     self.matiere = 'Sans_code'    
         #     self.code_matiere =  "r*"+self.remarque.replace(" ","").replace(":","").replace("-","").replace("(","").replace(")","").replace("'","")[:10].upper()#'Sans_code'
+        # -------------------------
+
+        # version edt-bis
+        m = re.search(r'Matière : (.*?) \((.*)\)\n',icsEvent.description, re.MULTILINE)
+        if m is not None : 
+            self.matiere = m.group(2)
+            if m.group(1) is not None :
+                self.code_matiere = m.group(1)
+            else:
+                self.code_matiere = "m*"+m.group(2).replace(" ","").replace(":","").replace("-","").replace("(","").replace(")","").replace("'","").upper()#'Sans_code'
+        else:
+            self.matiere = 'Sans_code'    
+            self.code_matiere =  "r*"+self.remarque.replace(" ","").replace(":","").replace("-","").replace("(","").replace(")","").replace("'","")[:10].upper()#'Sans_code'
         # -------------------------- 
 
         if self.code_matiere == 'Sans_code' :
@@ -562,7 +562,7 @@ def analyse(lev, code):
     for c in lev:
         if c.type is None: evt = "autre"
         else: evt = c.type
-
+ 
         if not evt in sorted_events : sorted_events[evt] = []
         sorted_events[evt].append(c)
 
@@ -578,8 +578,8 @@ def analyse(lev, code):
         course_type_total_hours = format_string.format(course_type_total.total_seconds() / 3600)
 
         # Output
-        #s = s + f'− {ct} : {str(course_type_total)} ({str(course_type_total_hours)})' + "\n"
-        s = s + '− '+str(course_type_total)+' ('+str(course_type_total_hours)+')' + "\n"
+        s = s + f'− {ct} : {str(course_type_total)} ({str(course_type_total_hours)})' + "\n"
+        #s = s + '− '+str(course_type_total)+' ('+str(course_type_total_hours)+')' + "\n"
 
     return s
 
