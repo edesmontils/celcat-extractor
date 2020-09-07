@@ -2,7 +2,7 @@
 
 <!DOCTYPE mab SYSTEM './web-config.dtd'>
 
-<mab version="0.1" debug="false" name="Celcat Extractor">
+<mab version="0.2" debug="false" name="Celcat Extractor">
 	<!-- numéro de version de l'application -->
 
 	<aPropos>
